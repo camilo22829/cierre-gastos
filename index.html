@@ -79,21 +79,26 @@
 
     <!-- VISTA 1: MES VIVO -->
     <section id="vista-mes" class="space-y-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
-          <p class="text-xs text-slate-400" id="lbl-gasto-mes">Gasto Real Confirmado (Noviembre 2026)</p>
-          <p class="text-3xl font-extrabold text-white mt-1" id="monto-gasto-mes">$1.514.714 <span class="text-xs font-normal text-slate-400">COP</span></p>
-          <p class="text-xs text-emerald-400 mt-2" id="sub-gasto-mes">✔ Incluye ajuste $50.000 Wilmer E.</p>
+          <p class="text-xs text-slate-400" id="lbl-gasto-mes">Gasto Real (Incl. Hogar/D1)</p>
+          <p class="text-2xl font-extrabold text-white mt-1" id="monto-gasto-mes">$1.514.714 <span class="text-xs font-normal text-slate-400">COP</span></p>
+          <p class="text-xs text-emerald-400 mt-2" id="sub-gasto-mes">✔ Incluye Hogar / Familia y D1</p>
         </div>
-        <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
-          <p class="text-xs text-slate-400">Rendimientos Crespibank</p>
-          <p class="text-3xl font-extrabold text-emerald-400 mt-1" id="monto-rendimientos">$332.334 <span class="text-xs font-normal text-slate-400">COP</span></p>
+        <div class="bg-slate-800/60 border border-purple-500/30 p-5 rounded-xl">
+          <p class="text-xs text-purple-300">Ingresos Interés Crespibank</p>
+          <p class="text-2xl font-extrabold text-emerald-400 mt-1" id="monto-rendimientos">$332.334 <span class="text-xs font-normal text-slate-400">COP</span></p>
           <p class="text-xs text-slate-300 mt-2" id="sub-rendimientos">Óscar ($100k) + Yorlady ($232k)</p>
+        </div>
+        <div class="bg-slate-800/60 border border-sky-500/30 p-5 rounded-xl">
+          <p class="text-xs text-sky-300">Otros Ingresos / Abonos Capital</p>
+          <p class="text-2xl font-extrabold text-sky-400 mt-1" id="monto-otros-ingresos">$840.000 <span class="text-xs font-normal text-slate-400">COP</span></p>
+          <p class="text-xs text-slate-300 mt-2" id="sub-otros-ingresos">Abonos capital y entradas externas</p>
         </div>
         <div id="caja-estado-cuadre" class="bg-emerald-950/30 border border-emerald-500/40 p-5 rounded-xl">
           <p class="text-xs text-emerald-300 font-semibold uppercase">Estado del Periodo</p>
-          <p class="text-lg font-bold text-emerald-400 mt-1 flex items-center gap-1.5" id="txt-estado-titulo">
-            <span>✔</span> CUENTAS CONSOLIDADAS - OK
+          <p class="text-base font-bold text-emerald-400 mt-1 flex items-center gap-1.5" id="txt-estado-titulo">
+            <span>✔</span> CONSOLIDADO - OK
           </p>
           <p class="text-xs text-slate-300 mt-1" id="txt-estado-sub">Diferencia $0 COP | Cuentas al día</p>
         </div>
@@ -101,13 +106,13 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
-          <h3 class="text-sm font-semibold text-slate-300 mb-4">Distribución del Gasto</h3>
+          <h3 class="text-sm font-semibold text-slate-300 mb-4">Distribución del Gasto (Incluyendo Hogar / Familia)</h3>
           <div class="h-64 flex justify-center">
             <canvas id="chartCategorias"></canvas>
           </div>
         </div>
         <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
-          <h3 class="text-sm font-semibold text-slate-300 mb-3">Movimientos Principales de Costo de Vida</h3>
+          <h3 class="text-sm font-semibold text-slate-300 mb-3">Movimientos Principales (Gasto Real & Hogar)</h3>
           <ul id="lista-comercios-mes" class="divide-y divide-slate-700/50 text-sm"></ul>
         </div>
       </div>
@@ -117,8 +122,8 @@
     <section id="vista-decision" class="space-y-4 hidden">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h3 class="text-base font-semibold text-slate-200">Bandeja de Clasificación Rápida a 1 Toque</h3>
-          <p class="text-xs text-slate-400">Cada toque actualiza tu Google Sheet y entrena las reglas automáticas.</p>
+          <h3 class="text-base font-semibold text-slate-200">Bandeja de Clasificación Rápida (Ingresos y Egresos)</h3>
+          <p class="text-xs text-slate-400">Cada toque actualiza tu Google Sheet y guarda la regla automática para el futuro.</p>
         </div>
         <button onclick="registrarMovimientoManual()" class="text-xs bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-medium transition">
           + Registrar Movimiento Rápido
@@ -142,12 +147,12 @@
         </div>
         <div class="bg-slate-800/60 border border-emerald-500/30 p-5 rounded-xl">
           <p class="text-xs text-emerald-300">Intereses Efectivos Cobrados</p>
-          <p class="text-2xl font-bold text-emerald-400 mt-1">$332.334 <span class="text-xs font-normal text-slate-400">COP</span></p>
+          <p class="text-2xl font-bold text-emerald-400 mt-1" id="crespibank-interes-total">$332.334 <span class="text-xs font-normal text-slate-400">COP</span></p>
           <p class="text-xs text-slate-400 mt-2">Óscar ($100k) + Yorlady ($232.334)</p>
         </div>
         <div class="bg-slate-800/60 border border-sky-500/30 p-5 rounded-xl">
           <p class="text-xs text-sky-300">Capital Recuperado en Noviembre</p>
-          <p class="text-2xl font-bold text-white mt-1">$840.000 <span class="text-xs font-normal text-slate-400">COP</span></p>
+          <p class="text-2xl font-bold text-white mt-1" id="crespibank-capital-total">$840.000 <span class="text-xs font-normal text-slate-400">COP</span></p>
           <p class="text-xs text-emerald-400 mt-2">Camilo Cárdenas ($440k) y Gerson ($400k) en $0</p>
         </div>
       </div>
@@ -249,7 +254,6 @@
   </div>
 
   <script>
-    // URL DE TU API WEB DE GOOGLE APPS SCRIPT
     const API_URL = 'https://script.google.com/macros/s/AKfycbx1X-D3CNyFchj8uhkxVTq4pU0SuWhZGuY5mfGgH8xFToQuohUK6gIA9HwSIgBFykuE6Q/exec';
 
     let mesActual = 'nov';
@@ -261,73 +265,84 @@
         titulo: 'Agosto 2026',
         gastoNum: 4820000,
         subGasto: '✔ Excluye préstamos y fondos puente',
-        rendimientos: '$180.000',
+        rendimientosNum: 180000,
         rendimientosSub: 'Óscar ($100k) + otros',
-        estado: 'CUENTAS CONSOLIDADAS - OK',
+        otrosIngresosNum: 0,
+        otrosIngresosSub: 'Sin abonos extraordinarios',
+        estado: 'CONSOLIDADO - OK',
         estadoSub: 'Diferencia $0 COP con extractos',
         comercios: [
-          { nombre: 'Tiendas D1 / Éxito', monto: '$1.450.000 COP' },
+          { nombre: 'Hogar / Familia (D1 / Éxito)', monto: '$1.450.000 COP' },
           { nombre: 'Servicios Públicos / Enel', monto: '$320.000 COP' },
           { nombre: 'Restaurantes y Cafés', monto: '$280.000 COP' },
           { nombre: 'Transporte y Combustible', monto: '$190.000 COP' }
         ],
         grafico: [35, 25, 20, 20],
-        labelsGrafico: ['Mercado', 'Compras', 'Servicios', 'Restaurantes/Otros']
+        labelsGrafico: ['Hogar / Familia', 'Compras', 'Servicios', 'Restaurantes/Otros']
       },
       sep: {
         titulo: 'Septiembre 2026',
         gastoNum: 5110000,
         subGasto: '✔ Excluye préstamos y fondos puente',
-        rendimientos: '$210.000',
+        rendimientosNum: 210000,
         rendimientosSub: 'Óscar ($100k) + Yorlady ($110k)',
-        estado: 'CUENTAS CONSOLIDADAS - OK',
+        otrosIngresosNum: 0,
+        otrosIngresosSub: 'Sin abonos extraordinarios',
+        estado: 'CONSOLIDADO - OK',
         estadoSub: 'Diferencia $0 COP con extractos',
         comercios: [
-          { nombre: 'Mercado (D1 / Éxito)', monto: '$1.620.000 COP' },
+          { nombre: 'Hogar / Familia (D1 / Éxito)', monto: '$1.620.000 COP' },
           { nombre: 'Compras Varias', monto: '$890.000 COP' },
           { nombre: 'Servicios y Cuotas', monto: '$410.000 COP' },
           { nombre: 'Restaurantes', monto: '$310.000 COP' }
         ],
         grafico: [40, 25, 18, 17],
-        labelsGrafico: ['Mercado', 'Compras', 'Servicios', 'Restaurantes/Otros']
+        labelsGrafico: ['Hogar / Familia', 'Compras', 'Servicios', 'Restaurantes/Otros']
       },
       oct: {
         titulo: 'Octubre 2026',
         gastoNum: 6340000,
         subGasto: '✔ Excluye préstamos y fondos puente',
-        rendimientos: '$185.000',
+        rendimientosNum: 185000,
         rendimientosSub: 'Intereses cobrados',
-        estado: 'CUENTAS CONSOLIDADAS - OK',
+        otrosIngresosNum: 0,
+        otrosIngresosSub: 'Sin abonos extraordinarios',
+        estado: 'CONSOLIDADO - OK',
         estadoSub: 'Diferencia $0 COP con extractos',
         comercios: [
-          { nombre: 'Tiendas D1 / Ara', monto: '$1.240.000 COP' },
+          { nombre: 'Hogar / Familia (D1 / Ara)', monto: '$1.240.000 COP' },
           { nombre: 'Pepe Ganga / Compras', monto: '$980.000 COP' },
           { nombre: 'DIAN (Impuestos / Serv.)', monto: '$517.000 COP' },
           { nombre: 'Enel & Servicios Públicos', monto: '$280.000 COP' }
         ],
         grafico: [38, 25, 18, 19],
-        labelsGrafico: ['Mercado', 'Compras', 'Impuestos', 'Otros']
+        labelsGrafico: ['Hogar / Familia', 'Compras', 'Impuestos', 'Otros']
       },
       nov: {
-        titulo: 'Noviembre 2026 (En curso)',
+        titulo: 'Noviembre 2026',
         gastoBase: 1514714,
         gastoNum: 1514714,
-        subGasto: '✔ Sincronizado con Google Sheets',
-        rendimientos: '$332.334',
+        subGasto: '✔ Incluye Hogar / Familia y D1',
+        rendimientosBase: 332334,
+        rendimientosNum: 332334,
         rendimientosSub: 'Óscar ($100k) + Yorlady ($232k)',
-        estado: 'CUENTAS CONSOLIDADAS - OK',
+        otrosIngresosBase: 840000,
+        otrosIngresosNum: 840000,
+        otrosIngresosSub: 'Abonos capital y otros ingresos',
+        estado: 'CONSOLIDADO - OK',
         estadoSub: 'Diferencia $0 COP | Cuentas al día',
         comerciosBase: [
-          { nombre: 'D1 Montevideo (2 compras)', monto: '$407.660 COP' },
-          { nombre: 'Temu Compras', monto: '$228.373 COP' },
-          { nombre: 'Pepe Ganga Toys', monto: '$131.759 COP' },
+          { nombre: 'Hogar / Familia — D1 Montevideo', monto: '$407.660 COP' },
+          { nombre: 'Compras Online — Temu', monto: '$228.373 COP' },
+          { nombre: 'Compras — Pepe Ganga Toys', monto: '$131.759 COP' },
           { nombre: 'Gastos Personales (Wilmer E.)', monto: '$50.000 COP' },
-          { nombre: 'Alimentos rápidos / Arepas / Huevos', monto: '$51.636 COP' },
+          { nombre: 'Alimentos / Arepas / Huevos', monto: '$51.636 COP' },
           { nombre: 'Transporte Uber', monto: '$12.950 COP' }
         ],
         comercios: [],
+        graficoBase: [407660, 360132, 50000, 51636, 12950],
         grafico: [407660, 360132, 50000, 51636, 12950],
-        labelsGrafico: ['Supermercados (D1)', 'Compras (Temu/PepeGanga)', 'Gastos Wilmer', 'Comida rápida', 'Uber']
+        labelsGrafico: ['Hogar / Familia (D1)', 'Compras (Temu/PepeGanga)', 'Gastos Wilmer', 'Comida rápida', 'Uber']
       }
     };
 
@@ -337,7 +352,6 @@
       return '$' + Math.round(valor).toLocaleString('es-CO');
     }
 
-    // SINCRONIZACIÓN EN VIVO CON GOOGLE APPS SCRIPT
     async function sincronizarNube() {
       const badgeNube = document.getElementById('status-nube');
       badgeNube.innerHTML = '⏳ Sincronizando...';
@@ -350,9 +364,7 @@
         if (data.status === 'ok') {
           badgeNube.innerHTML = '🟢 Nube Conectada';
           badgeNube.className = 'text-[11px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-0.5 rounded-full';
-
-          const movimientos = data.movimientos || [];
-          procesarDatosNube(movimientos);
+          procesarDatosNube(data.movimientos || []);
         }
       } catch (err) {
         badgeNube.innerHTML = '🟡 Modo Local';
@@ -361,25 +373,50 @@
     }
 
     function procesarDatosNube(movimientos) {
-      let extraNov = 0;
+      let extraGastoNov = 0;
+      let extraHogarNov = 0;
+      let extraInteresNov = 0;
+      let extraOtrosIngresosNov = 0;
+
       const nuevosComerciosNov = [];
       const pendientes = [];
 
       movimientos.forEach(m => {
         const monto = parseFloat(m.Monto) || 0;
-        if (m.Tipo === 'PENDIENTE') {
+        const tipo = (m.Tipo || '').toString();
+        const cat = (m.Categoria || '').toString();
+
+        if (tipo.startsWith('PENDIENTE')) {
           pendientes.push(m);
-        } else if (m.Tipo === 'Gasto Real' && m.Mes === 'nov') {
-          extraNov += monto;
-          nuevosComerciosNov.push({
-            nombre: `${m.Descripcion} (${m.Banco})`,
-            monto: `${formatoCOP(monto)} COP`
-          });
+        } else if (m.Mes === 'nov') {
+          if (tipo === 'Gasto Real') {
+            extraGastoNov += monto;
+            if (cat === 'Hogar / Familia') extraHogarNov += monto;
+            const etiquetaCat = cat === 'Hogar / Familia' ? 'Hogar / Familia — ' : '';
+            nuevosComerciosNov.push({
+              nombre: `${etiquetaCat}${m.Descripcion} (${m.Banco})`,
+              monto: `${formatoCOP(monto)} COP`
+            });
+          } else if (tipo === 'Crespibank_Interes') {
+            extraInteresNov += monto;
+          } else if (tipo === 'Crespibank_Capital' || tipo === 'Otro_Ingreso') {
+            extraOtrosIngresosNov += monto;
+          }
         }
       });
 
-      datosMeses.nov.gastoNum = datosMeses.nov.gastoBase + extraNov;
+      datosMeses.nov.gastoNum = datosMeses.nov.gastoBase + extraGastoNov;
+      datosMeses.nov.rendimientosNum = datosMeses.nov.rendimientosBase + extraInteresNov;
+      datosMeses.nov.otrosIngresosNum = datosMeses.nov.otrosIngresosBase + extraOtrosIngresosNov;
+
+      datosMeses.nov.grafico = [...datosMeses.nov.graficoBase];
+      datosMeses.nov.grafico[0] += extraHogarNov;
+      datosMeses.nov.grafico[1] += (extraGastoNov - extraHogarNov);
+
       datosMeses.nov.comercios = [...nuevosComerciosNov, ...datosMeses.nov.comerciosBase];
+
+      document.getElementById('crespibank-interes-total').innerHTML = `${formatoCOP(datosMeses.nov.rendimientosNum)} <span class="text-xs font-normal text-slate-400">COP</span>`;
+      document.getElementById('crespibank-capital-total').innerHTML = `${formatoCOP(datosMeses.nov.otrosIngresosNum)} <span class="text-xs font-normal text-slate-400">COP</span>`;
 
       renderizarBandejaPendientes(pendientes);
       actualizarVistaMes(mesActual);
@@ -403,31 +440,50 @@
       badge.innerText = pendientes.length;
       badgeNov.innerText = `⚠️ ${pendientes.length}`;
 
-      cont.innerHTML = pendientes.map(p => `
-        <div id="card-${p.ID}" class="tarjeta-movimiento bg-slate-800 border border-slate-700 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono">${p.Banco}</span>
-              <span class="text-xs text-slate-400">${p.Fecha}</span>
+      cont.innerHTML = pendientes.map(p => {
+        const esIngreso = p.Flujo === 'Ingreso' || p.Tipo === 'PENDIENTE_INGRESO';
+        const etiquetaFlujo = esIngreso
+          ? '<span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">↓ INGRESO DETECTADO</span>'
+          : '<span class="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded font-bold">↑ PAGO / EGRESO</span>';
+
+        const botones = esIngreso
+          ? `
+            <button onclick="clasificarEnNube('${p.ID}', 'Crespibank_Interes', 'Rendimientos', '${p.Descripcion}')" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💰 Interés Crespibank</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Crespibank_Capital', 'Abono Capital', '${p.Descripcion}')" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">💵 Abono Capital</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Reintegro Quiminsa', 'Corporativo', '${p.Descripcion}')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Reintegro Quiminsa</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Otro_Ingreso', 'Otros Ingresos', '${p.Descripcion}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">📥 Otro Ingreso</button>
+          `
+          : `
+            <button onclick="clasificarEnNube('${p.ID}', 'Gasto Real', 'Hogar / Familia', '${p.Descripcion}')" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">🏠 Hogar / Familia</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Gasto Real', 'Gasto Personal', '${p.Descripcion}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">🛒 Gasto Personal</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Crespibank_Desembolso', 'Préstamo Nuevo', '${p.Descripcion}')" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💼 Préstamo Crespibank</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Puente Quiminsa', 'Corporativo', '${p.Descripcion}')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Puente Quiminsa</button>
+          `;
+
+        return `
+          <div id="card-${p.ID}" class="tarjeta-movimiento bg-slate-800 border border-slate-700 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                ${etiquetaFlujo}
+                <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono">${p.Banco}</span>
+                <span class="text-xs text-slate-400">${p.Fecha}</span>
+              </div>
+              <p class="font-bold text-white text-base mt-1">${formatoCOP(p.Monto)} COP</p>
+              <p class="text-xs text-slate-300">${p.Descripcion}</p>
             </div>
-            <p class="font-bold text-white text-base mt-1">${formatoCOP(p.Monto)} COP</p>
-            <p class="text-xs text-slate-300">${p.Descripcion}</p>
+            <div class="flex flex-wrap gap-1.5">
+              ${botones}
+            </div>
           </div>
-          <div class="flex flex-wrap gap-1.5">
-            <button onclick="clasificarEnNube('${p.ID}', 'Gasto Real', '${p.Descripcion}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">🛒 Gasto Real</button>
-            <button onclick="clasificarEnNube('${p.ID}', 'Familiar', '${p.Descripcion}')" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">🏠 Familiar</button>
-            <button onclick="clasificarEnNube('${p.ID}', 'Crespibank', '${p.Descripcion}')" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💼 Crespibank</button>
-            <button onclick="clasificarEnNube('${p.ID}', 'Puente Quiminsa', '${p.Descripcion}')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Quiminsa</button>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
-    async function clasificarEnNube(id, tipo, descripcion) {
+    async function clasificarEnNube(id, tipo, categoria, descripcion) {
       const card = document.getElementById(`card-${id}`);
       if (card) {
         card.style.opacity = '0.4';
-        card.innerHTML = `<p class="text-xs text-emerald-400 font-semibold">⏳ Guardando "${tipo}" en Google Sheets y entrenando regla...</p>`;
+        card.innerHTML = `<p class="text-xs text-emerald-400 font-semibold">⏳ Guardando "${categoria}" en Google Sheets y entrenando regla...</p>`;
       }
 
       try {
@@ -438,6 +494,7 @@
           body: JSON.stringify({
             id: id,
             tipo: tipo,
+            categoria: categoria,
             descripcion: descripcion,
             aprenderPatron: true
           })
@@ -449,11 +506,12 @@
     }
 
     async function registrarMovimientoManual() {
-      const comercio = prompt('Nombre del comercio o destinatario:');
+      const comercio = prompt('Nombre del comercio, cliente o concepto:');
       if (!comercio) return;
       const montoStr = prompt('Monto en COP (solo números, ej: 45000):');
       const monto = parseFloat(montoStr);
       if (!monto) return;
+      const esIng = confirm('¿Este movimiento es un INGRESO (dinero que recibiste)?\n\nAceptar = Ingreso\nCancelar = Pago / Gasto');
 
       await fetch(API_URL, {
         method: 'POST',
@@ -461,9 +519,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           accion: 'nuevo_correo',
-          asunto: 'Registro Manual App',
-          cuerpo: `Compra en ${comercio} por $${monto}`,
-          comercio: comercio
+          asunto: esIng ? 'Recibiste transferencia' : 'Compra manual',
+          cuerpo: `${esIng ? 'Recibiste' : 'Compra'} en ${comercio} por $${monto}`
         })
       });
       setTimeout(() => sincronizarNube(), 1200);
@@ -498,12 +555,15 @@
       const data = datosMeses[mes];
       if (!data) return;
 
-      document.getElementById('lbl-gasto-mes').innerText = `Gasto Real Confirmado (${data.titulo})`;
+      document.getElementById('lbl-gasto-mes').innerText = `Gasto Real (${data.titulo})`;
       document.getElementById('monto-gasto-mes').innerHTML = `${formatoCOP(data.gastoNum)} <span class="text-xs font-normal text-slate-400">COP</span>`;
       document.getElementById('sub-gasto-mes').innerText = data.subGasto;
       
-      document.getElementById('monto-rendimientos').innerHTML = `${data.rendimientos} <span class="text-xs font-normal text-slate-400">COP</span>`;
+      document.getElementById('monto-rendimientos').innerHTML = `${formatoCOP(data.rendimientosNum)} <span class="text-xs font-normal text-slate-400">COP</span>`;
       document.getElementById('sub-rendimientos').innerText = data.rendimientosSub;
+
+      document.getElementById('monto-otros-ingresos').innerHTML = `${formatoCOP(data.otrosIngresosNum)} <span class="text-xs font-normal text-slate-400">COP</span>`;
+      document.getElementById('sub-otros-ingresos').innerText = data.otrosIngresosSub;
 
       document.getElementById('txt-estado-titulo').innerHTML = `<span>✔</span> ${data.estado}`;
       document.getElementById('txt-estado-sub').innerText = data.estadoSub;
@@ -528,7 +588,7 @@
           labels: labels,
           datasets: [{
             data: data,
-            backgroundColor: ['#10b981', '#3b82f6', '#a855f7', '#f59e0b', '#ec4899']
+            backgroundColor: ['#0ea5e9', '#10b981', '#a855f7', '#f59e0b', '#ec4899']
           }]
         },
         options: {
@@ -565,7 +625,7 @@
 
     function descargarInforme() {
       const d = datosMeses[mesActual];
-      const contenido = `INFORME EJECUTIVO - CORTE ${d.titulo.toUpperCase()}\nEstado: ${d.estado}\n\n1. Gasto Real Confirmado: ${formatoCOP(d.gastoNum)} COP\n2. Rendimientos Crespibank: ${d.rendimientos} COP\n3. Saldo por Cobrar Quiminsa SAS: $673.354 COP\n4. Estado de Auditoría: ${d.estadoSub}`;
+      const contenido = `INFORME EJECUTIVO - CORTE ${d.titulo.toUpperCase()}\nEstado: ${d.estado}\n\n1. Gasto Real Confirmado (Incl. Hogar/Familia): ${formatoCOP(d.gastoNum)} COP\n2. Ingresos Interés Crespibank: ${formatoCOP(d.rendimientosNum)} COP\n3. Otros Ingresos / Abonos Capital: ${formatoCOP(d.otrosIngresosNum)} COP\n4. Saldo por Cobrar Quiminsa SAS: $673.354 COP`;
       const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
