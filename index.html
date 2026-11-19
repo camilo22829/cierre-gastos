@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cierre Financiero & Crespibank</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CierreGastos">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2382/2382461.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
+  <div class="max-w-6xl mx-auto p-4 sm:p-6">
+    
+    <!-- Encabezado -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700 pb-4 gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-emerald-400">Sistema Financiero & Crespibank</h1>
+        <p class="text-sm text-slate-400">Bogotá D.C. (UTC-5) | Clasificación & Cierre Automatizado</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="abrirModalGuia()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 text-sm px-3.5 py-2 rounded-lg font-medium transition flex items-center gap-1.5">
+          <span>📱</span> Instalar en Celular
+        </button>
+        <button onclick="descargarInforme()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-sm px-4 py-2 rounded-lg font-medium transition shadow flex items-center gap-1.5">
+          <span>📄</span> Informe Ejecutivo
+        </button>
+      </div>
+    </header>
+
+    <!-- Selector de Periodos -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-2">
+      <span class="text-xs text-slate-400 uppercase font-semibold">Periodo:</span>
+      <button onclick="seleccionarMes('ago')" id="chip-ago" class="px-3 py-1 bg-slate-800 text-slate-300 rounded-full text-xs transition flex items-center gap-1">
+        <span>Ago 2026</span> <span class="text-emerald-400 font-bold">✔ OK</span>
+      </button>
+      <button onclick="seleccionarMes('sep')" id="chip-sep" class="px-3 py-1 bg-slate-800 text-slate-300 rounded-full text-xs transition flex items-center gap-1">
+        <span>Sep 2026</span> <span class="text-emerald-400 font-bold">✔ OK</span>
+      </button>
+      <button onclick="seleccionarMes('oct')" id="chip-oct" class="px-3 py-1 bg-slate-800 text-slate-300 rounded-full text-xs transition flex items-center gap-1">
+        <span>Oct 2026</span> <span class="text-emerald-400 font-bold">✔ OK</span>
+      </button>
+      <button onclick="seleccionarMes('nov')" id="chip-nov" class="px-3 py-1 bg-emerald-600 text-white rounded-full text-xs font-bold transition flex items-center gap-1 shadow">
+        <span>Nov 2026</span> <span id="badge-nov" class="text-emerald-200 font-bold">✔ OK</span>
+      </button>
+    </div>
+
+    <!-- Pestañas de Navegación -->
+    <nav class="flex space-x-2 border-b border-slate-800 mb-6 overflow-x-auto pb-2 text-sm">
+      <button onclick="cambiarPestana('mes')" id="tab-mes" class="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 font-semibold transition">Mes Vivo</button>
+      <button onclick="cambiarPestana('decision')" id="tab-decision" class="px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-400 transition flex items-center gap-1.5">
+        <span>Clasificación Rápida</span>
+        <span id="contador-decisiones" class="bg-emerald-500/20 text-emerald-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold">✔</span>
+      </button>
+      <button onclick="cambiarPestana('crespibank')" id="tab-crespibank" class="px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-400 transition flex items-center gap-1">
+        <span>★</span> Crespibank
+      </button>
+      <button onclick="cambiarPestana('quiminsa')" id="tab-quiminsa" class="px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-400 transition">
+        🏢 Puente Quiminsa
+      </button>
+      <button onclick="cambiarPestana('ano')" id="tab-ano" class="px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-400 transition">Histórico Anual</button>
+    </nav>
+
+    <!-- VISTA 1: MES VIVO -->
+    <section id="vista-mes" class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
+          <p class="text-xs text-slate-400" id="lbl-gasto-mes">Gasto Real Confirmado (Noviembre 2026)</p>
+          <p class="text-3xl font-extrabold text-white mt-1" id="monto-gasto-mes">$1.514.714 <span class="text-xs font-normal text-slate-400">COP</span></p>
+          <p class="text-xs text-emerald-400 mt-2" id="sub-gasto-mes">✔ Incluye ajuste $50.000 Wilmer E.</p>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
+          <p class="text-xs text-slate-400">Rendimientos Crespibank</p>
+          <p class="text-3xl font-extrabold text-emerald-400 mt-1" id="monto-rendimientos">$332.334 <span class="text-xs font-normal text-slate-400">COP</span></p>
+          <p class="text-xs text-slate-300 mt-2" id="sub-rendimientos">Óscar ($100k) + Yorlady ($232k)</p>
+        </div>
+        <div id="caja-estado-cuadre" class="bg-emerald-950/30 border border-emerald-500/40 p-5 rounded-xl">
+          <p class="text-xs text-emerald-300 font-semibold uppercase">Estado del Periodo</p>
+          <p class="text-lg font-bold text-emerald-400 mt-1 flex items-center gap-1.5" id="txt-estado-titulo">
+            <span>✔</span> CUENTAS CONSOLIDADAS - OK
+          </p>
+          <p class="text-xs text-slate-300 mt-1" id="txt-estado-sub">Diferencia $0 COP | Cuentas al día</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
+          <h3 class="text-sm font-semibold text-slate-300 mb-4">Distribución del Gasto</h3>
+          <div class="h-64 flex justify-center">
+            <canvas id="chartCategorias"></canvas>
+          </div>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
+          <h3 class="text-sm font-semibold text-slate-300 mb-3">Movimientos Principales de Costo de Vida</h3>
+          <ul id="lista-comercios-mes" class="divide-y divide-slate-700/50 text-sm"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 2: CLASIFICACIÓN RÁPIDA (1 TOQUE) -->
+    <section id="vista-decision" class="space-y-4 hidden">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h3 class="text-base font-semibold text-slate-200">Bandeja de Clasificación Rápida a 1 Toque</h3>
+          <p class="text-xs text-slate-400">Toca el botón correspondiente para clasificar y guardar la regla de aprendizaje.</p>
+        </div>
+        <button onclick="simularNuevaAlerta()" class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-lg transition">
+          + Simular Alerta Entrante
+        </button>
+      </div>
+      
+      <div class="space-y-3 mt-4" id="contenedor-clasificacion">
+        <div class="p-6 text-center border border-dashed border-slate-700 rounded-xl text-slate-400 text-sm">
+          ✔ No hay movimientos pendientes. Todas las alertas están clasificadas.
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 3: CRESPIBANK -->
+    <section id="vista-crespibank" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-slate-800/60 border border-purple-500/30 p-5 rounded-xl">
+          <p class="text-xs text-purple-300">Cartera Activa Colocada</p>
+          <p class="text-2xl font-bold text-white mt-1">$5.200.000 <span class="text-xs font-normal text-slate-400">COP</span></p>
+          <p class="text-xs text-slate-400 mt-2">José Cananias ($1.5M) + saldo cartera activa</p>
+        </div>
+        <div class="bg-slate-800/60 border border-emerald-500/30 p-5 rounded-xl">
+          <p class="text-xs text-emerald-300">Intereses Efectivos Cobrados</p>
+          <p class="text-2xl font-bold text-emerald-400 mt-1">$332.334 <span class="text-xs font-normal text-slate-400">COP</span></p>
+          <p class="text-xs text-slate-400 mt-2">Óscar ($100k) + Yorlady ($232.334)</p>
+        </div>
+        <div class="bg-slate-800/60 border border-sky-500/30 p-5 rounded-xl">
+          <p class="text-xs text-sky-300">Capital Recuperado en Noviembre</p>
+          <p class="text-2xl font-bold text-white mt-1">$840.000 <span class="text-xs font-normal text-slate-400">COP</span></p>
+          <p class="text-xs text-emerald-400 mt-2">Camilo Cárdenas ($440k) y Gerson ($400k) en $0</p>
+        </div>
+      </div>
+
+      <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
+        <h3 class="text-sm font-semibold text-slate-200 mb-3">Libreta Operativa Crespibank</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-300">
+            <thead class="text-xs uppercase bg-slate-900/50 text-slate-400 border-b border-slate-700">
+              <tr>
+                <th class="p-3">ID</th>
+                <th class="p-3">Deudor</th>
+                <th class="p-3">Deuda Inicial</th>
+                <th class="p-3">Interés Fijo Mensual</th>
+                <th class="p-3">Saldo Capital</th>
+                <th class="p-3">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-700/50">
+              <tr>
+                <td class="p-3 font-mono text-xs text-purple-400">p-003</td>
+                <td class="p-3 font-medium text-white">José Cananias</td>
+                <td class="p-3">$1.500.000</td>
+                <td class="p-3 text-emerald-400 font-semibold">$30.000 / mes</td>
+                <td class="p-3 font-bold text-white">$1.500.000</td>
+                <td class="p-3"><span class="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">Desembolsado 09/Nov</span></td>
+              </tr>
+              <tr>
+                <td class="p-3 font-mono text-xs text-purple-400">p-004</td>
+                <td class="p-3 font-medium text-white">Camilo Cárdenas</td>
+                <td class="p-3">$440.000</td>
+                <td class="p-3 text-slate-400">-</td>
+                <td class="p-3 font-bold text-emerald-400">$0</td>
+                <td class="p-3"><span class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded">Cancelado (03/Nov)</span></td>
+              </tr>
+              <tr>
+                <td class="p-3 font-mono text-xs text-purple-400">p-005</td>
+                <td class="p-3 font-medium text-white">Gerson Delgadillo</td>
+                <td class="p-3">$400.000</td>
+                <td class="p-3 text-slate-400">-</td>
+                <td class="p-3 font-bold text-emerald-400">$0</td>
+                <td class="p-3"><span class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded">Devuelto (04/Nov)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 4: PUENTE QUIMINSA -->
+    <section id="vista-quiminsa" class="space-y-6 hidden">
+      <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
+        <div class="flex flex-col sm:flex-row justify-between items-start gap-2">
+          <div>
+            <h3 class="text-base font-semibold text-slate-200">Balance Fondos Puente — Quiminsa SAS</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Gastos pagados con fondos personales pendientes de reintegro por la empresa.</p>
+          </div>
+          <span class="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold rounded-lg">
+            Saldo por Cobrar: $673.354 COP
+          </span>
+        </div>
+
+        <div class="mt-5 space-y-3">
+          <div class="bg-slate-900/50 p-3.5 rounded-lg border border-slate-800 flex justify-between items-center text-sm">
+            <div>
+              <p class="font-medium text-white">Tiquetes Avianca S.A.</p>
+              <p class="text-xs text-slate-400">07/Nov/2026 | Tarjeta Visa Infinite</p>
+            </div>
+            <span class="font-semibold text-amber-400">$651.830 COP</span>
+          </div>
+          <div class="bg-slate-900/50 p-3.5 rounded-lg border border-slate-800 flex justify-between items-center text-sm">
+            <div>
+              <p class="font-medium text-white">Consumo El Maná Coffee and Bru</p>
+              <p class="text-xs text-slate-400">06/Nov/2026 | Tarjeta Visa Infinite</p>
+            </div>
+            <span class="font-semibold text-amber-400">$21.524 COP</span>
+          </div>
+          <div class="bg-slate-900/50 p-3.5 rounded-lg border border-slate-800 flex justify-between items-center text-sm opacity-60">
+            <div>
+              <p class="font-medium text-white line-through">Devolución Anticipo Quiminsa SAS</p>
+              <p class="text-xs text-slate-400">04/Nov/2026 | Liquidado</p>
+            </div>
+            <span class="font-semibold text-emerald-400">$2.380.000 (Saldado ✔)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 5: HISTÓRICO ANUAL -->
+    <section id="vista-ano" class="space-y-6 hidden">
+      <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
+        <h3 class="text-sm font-semibold text-slate-300 mb-4">Gasto Mensual 2026 (COP)</h3>
+        <div class="h-72">
+          <canvas id="chartHistorico"></canvas>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- MODAL GUÍA INSTALACIÓN -->
+  <div id="modal-guia" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 max-w-md w-full rounded-2xl p-6 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+        <h3 class="font-bold text-lg text-emerald-400">Instalar PWA en tu Celular</h3>
+        <button onclick="cerrarModalGuia()" class="text-slate-400 hover:text-white text-xl">×</button>
+      </div>
+      <div class="space-y-3 text-sm text-slate-300">
+        <p><strong class="text-white">1. En iPhone (Safari):</strong><br>Abre el enlace público de GitHub Pages en Safari, toca el botón <strong>Compartir</strong> (cuadrado con flecha hacia arriba) y elige <strong>"Agregar al inicio"</strong>.</p>
+        <p><strong class="text-white">2. En Android (Chrome):</strong><br>Abre el enlace en Chrome, toca los tres puntos arriba a la derecha y selecciona <strong>"Instalar aplicación"</strong>.</p>
+      </div>
+      <button onclick="cerrarModalGuia()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg text-sm">Entendido</button>
+    </div>
+  </div>
+
+  <script>
+    let mesActual = 'nov';
+    let chartCatInstance = null;
+
+    const datosMeses = {
+      ago: {
+        titulo: 'Agosto 2026',
+        gasto: '$4.820.000',
+        subGasto: '✔ Excluye préstamos y fondos puente',
+        rendimientos: '$180.000',
+        rendimientosSub: 'Óscar ($100k) + otros',
+        estado: 'CUENTAS CONSOLIDADAS - OK',
+        estadoSub: 'Diferencia $0 COP con extractos',
+        comercios: [
+          { nombre: 'Tiendas D1 / Éxito', monto: '$1.450.000 COP' },
+          { nombre: 'Servicios Públicos / Enel', monto: '$320.000 COP' },
+          { nombre: 'Restaurantes y Cafés', monto: '$280.000 COP' },
+          { nombre: 'Transporte y Combustible', monto: '$190.000 COP' }
+        ],
+        grafico: [35, 25, 20, 20],
+        labelsGrafico: ['Mercado', 'Compras', 'Servicios', 'Restaurantes/Otros']
+      },
+      sep: {
+        titulo: 'Septiembre 2026',
+        gasto: '$5.110.000',
+        subGasto: '✔ Excluye préstamos y fondos puente',
+        rendimientos: '$210.000',
+        rendimientosSub: 'Óscar ($100k) + Yorlady ($110k)',
+        estado: 'CUENTAS CONSOLIDADAS - OK',
+        estadoSub: 'Diferencia $0 COP con extractos',
+        comercios: [
+          { nombre: 'Mercado (D1 / Éxito)', monto: '$1.620.000 COP' },
+          { nombre: 'Compras Varias', monto: '$890.000 COP' },
+          { nombre: 'Servicios y Cuotas', monto: '$410.000 COP' },
+          { nombre: 'Restaurantes', monto: '$310.000 COP' }
+        ],
+        grafico: [40, 25, 18, 17],
+        labelsGrafico: ['Mercado', 'Compras', 'Servicios', 'Restaurantes/Otros']
+      },
+      oct: {
+        titulo: 'Octubre 2026',
+        gasto: '$6.340.000',
+        subGasto: '✔ Excluye préstamos y fondos puente',
+        rendimientos: '$185.000',
+        rendimientosSub: 'Intereses cobrados',
+        estado: 'CUENTAS CONSOLIDADAS - OK',
+        estadoSub: 'Diferencia $0 COP con extractos',
+        comercios: [
+          { nombre: 'Tiendas D1 / Ara', monto: '$1.240.000 COP' },
+          { nombre: 'Pepe Ganga / Compras', monto: '$980.000 COP' },
+          { nombre: 'DIAN (Impuestos / Serv.)', monto: '$517.000 COP' },
+          { nombre: 'Enel & Servicios Públicos', monto: '$280.000 COP' }
+        ],
+        grafico: [38, 25, 18, 19],
+        labelsGrafico: ['Mercado', 'Compras', 'Impuestos', 'Otros']
+      },
+      nov: {
+        titulo: 'Noviembre 2026 (En curso)',
+        gasto: '$1.514.714',
+        subGasto: '✔ Incluye ajuste $50.000 Wilmer E.',
+        rendimientos: '$332.334',
+        rendimientosSub: 'Óscar ($100k) + Yorlady ($232k)',
+        estado: 'CUENTAS CONSOLIDADAS - OK',
+        estadoSub: 'Diferencia $0 COP | Cuentas al día',
+        comercios: [
+          { nombre: 'D1 Montevideo (2 compras)', monto: '$407.660 COP' },
+          { nombre: 'Temu Compras', monto: '$228.373 COP' },
+          { nombre: 'Pepe Ganga Toys', monto: '$131.759 COP' },
+          { nombre: 'Gastos Personales (Wilmer E.)', monto: '$50.000 COP' },
+          { nombre: 'Alimentos rápidos / Arepas / Huevos', monto: '$51.636 COP' },
+          { nombre: 'Transporte Uber', monto: '$12.950 COP' }
+        ],
+        grafico: [407660, 360132, 50000, 51636, 12950],
+        labelsGrafico: ['Supermercados (D1)', 'Compras (Temu/PepeGanga)', 'Gastos Wilmer', 'Comida rápida', 'Uber']
+      }
+    };
+
+    function cambiarPestana(pestana) {
+      ['mes', 'decision', 'crespibank', 'quiminsa', 'ano'].forEach(p => {
+        document.getElementById(`vista-${p}`).classList.add('hidden');
+        document.getElementById(`tab-${p}`).classList.remove('bg-emerald-500/20', 'text-emerald-400', 'font-semibold');
+        document.getElementById(`tab-${p}`).classList.add('text-slate-400');
+      });
+      document.getElementById(`vista-${pestana}`).classList.remove('hidden');
+      document.getElementById(`tab-${pestana}`).classList.add('bg-emerald-500/20', 'text-emerald-400', 'font-semibold');
+      document.getElementById(`tab-${pestana}`).classList.remove('text-slate-400');
+    }
+
+    function seleccionarMes(mes) {
+      mesActual = mes;
+      ['ago', 'sep', 'oct', 'nov'].forEach(m => {
+        const btn = document.getElementById(`chip-${m}`);
+        btn.classList.remove('bg-emerald-600', 'text-white', 'font-bold', 'shadow');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      const act = document.getElementById(`chip-${mes}`);
+      act.classList.add('bg-emerald-600', 'text-white', 'font-bold', 'shadow');
+      act.classList.remove('bg-slate-800', 'text-slate-300');
+
+      actualizarVistaMes(mes);
+    }
+
+    function actualizarVistaMes(mes) {
+      const data = datosMeses[mes];
+      if (!data) return;
+
+      document.getElementById('lbl-gasto-mes').innerText = `Gasto Real Confirmado (${data.titulo})`;
+      document.getElementById('monto-gasto-mes').innerHTML = `${data.gasto} <span class="text-xs font-normal text-slate-400">COP</span>`;
+      document.getElementById('sub-gasto-mes').innerText = data.subGasto;
+      
+      document.getElementById('monto-rendimientos').innerHTML = `${data.rendimientos} <span class="text-xs font-normal text-slate-400">COP</span>`;
+      document.getElementById('sub-rendimientos').innerText = data.rendimientosSub;
+
+      document.getElementById('txt-estado-titulo').innerHTML = `<span>✔</span> ${data.estado}`;
+      document.getElementById('txt-estado-sub').innerText = data.estadoSub;
+
+      const listaComercios = document.getElementById('lista-comercios-mes');
+      listaComercios.innerHTML = data.comercios.map(c => `
+        <li class="py-2 flex justify-between">
+          <span>${c.nombre}</span>
+          <span class="font-semibold text-slate-200">${c.monto}</span>
+        </li>
+      `).join('');
+
+      actualizarGraficoCategorias(data.labelsGrafico, data.grafico);
+    }
+
+    function actualizarGraficoCategorias(labels, data) {
+      if (chartCatInstance) {
+        chartCatInstance.destroy();
+      }
+      const ctx = document.getElementById('chartCategorias').getContext('2d');
+      chartCatInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: ['#10b981', '#3b82f6', '#a855f7', '#f59e0b', '#ec4899']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    function clasificarMovimiento(cardId, tipo, monto, comercio) {
+      const card = document.getElementById(cardId);
+      if (card) {
+        card.style.transition = 'all 0.3s ease';
+        card.style.opacity = '0';
+        setTimeout(() => {
+          card.remove();
+          const cont = document.getElementById('contenedor-clasificacion');
+          if (!cont.querySelector('.tarjeta-movimiento')) {
+            cont.innerHTML = '<div class="p-6 text-center border border-dashed border-slate-700 rounded-xl text-emerald-400 text-sm">✔ Bandeja vacía. Todo clasificado con éxito.</div>';
+            const badge = document.getElementById('contador-decisiones');
+            badge.className = 'bg-emerald-500/20 text-emerald-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold';
+            badge.innerText = '✔';
+          }
+        }, 300);
+      }
+      const reglas = JSON.parse(localStorage.getItem('reglas_clasificacion') || '{}');
+      reglas[comercio] = tipo;
+      localStorage.setItem('reglas_clasificacion', JSON.stringify(reglas));
+    }
+
+    function simularNuevaAlerta() {
+      const cont = document.getElementById('contenedor-clasificacion');
+      const id = 'mov-' + Date.now();
+      const html = `
+        <div id="${id}" class="tarjeta-movimiento bg-slate-800 border border-slate-700 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div>
+            <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono">Bancolombia</span>
+            <p class="font-bold text-white text-base mt-1">$45.000 COP</p>
+            <p class="text-xs text-slate-300">Pago QR / Panadería Granjas</p>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="clasificarMovimiento('${id}', 'Gasto Real', 45000, 'Panadería Granjas')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">🛒 Gasto Real</button>
+            <button onclick="clasificarMovimiento('${id}', 'Familiar', 45000, 'Panadería Granjas')" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">🏠 Familiar</button>
+            <button onclick="clasificarMovimiento('${id}', 'Crespibank', 45000, 'Panadería Granjas')" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💼 Crespibank</button>
+            <button onclick="clasificarMovimiento('${id}', 'Puente Quiminsa', 45000, 'Panadería Granjas')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Quiminsa</button>
+          </div>
+        </div>
+      `;
+      if (cont.innerHTML.includes('Bandeja vacía')) cont.innerHTML = html;
+      else cont.insertAdjacentHTML('afterbegin', html);
+      
+      const badge = document.getElementById('contador-decisiones');
+      badge.className = 'bg-amber-500/20 text-amber-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold';
+      badge.innerText = '1';
+    }
+
+    function abrirModalGuia() {
+      document.getElementById('modal-guia').classList.remove('hidden');
+      document.getElementById('modal-guia').classList.add('flex');
+    }
+
+    function cerrarModalGuia() {
+      document.getElementById('modal-guia').classList.add('hidden');
+      document.getElementById('modal-guia').classList.remove('flex');
+    }
+
+    function descargarInforme() {
+      const d = datosMeses[mesActual];
+      const contenido = `INFORME EJECUTIVO - CORTE ${d.titulo.toUpperCase()}\nEstado: ${d.estado}\n\n1. Gasto Real Confirmado: ${d.gasto} COP\n2. Rendimientos Crespibank: ${d.rendimientos} COP\n3. Saldo por Cobrar Quiminsa SAS: $673.354 COP\n4. Estado de Auditoría: ${d.estadoSub}`;
+      const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `informe_ejecutivo_${mesActual}_2026.txt`;
+      a.click();
+    }
+
+    window.onload = function() {
+      actualizarVistaMes('nov');
+
+      new Chart(document.getElementById('chartHistorico'), {
+        type: 'bar',
+        data: {
+          labels: ['Ago', 'Sep', 'Oct', 'Nov (En curso)'],
+          datasets: [{
+            label: 'Gasto Consolidado (COP)',
+            data: [4820000, 5110000, 6340000, 1514714],
+            backgroundColor: '#10b981'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { ticks: { color: '#94a3b8' } },
+            x: { ticks: { color: '#94a3b8' } }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    };
+  </script>
+</body>
+</html>
