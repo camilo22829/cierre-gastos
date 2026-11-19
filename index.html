@@ -26,12 +26,17 @@
     <!-- Encabezado -->
     <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700 pb-4 gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-emerald-400">Sistema Financiero & Crespibank</h1>
-        <p class="text-sm text-slate-400">Bogotá D.C. (UTC-5) | Clasificación & Cierre Automatizado</p>
+        <div class="flex items-center gap-2.5">
+          <h1 class="text-2xl font-bold text-emerald-400">Sistema Financiero & Crespibank</h1>
+          <span id="status-nube" class="text-[11px] bg-slate-800 border border-slate-700 text-slate-300 px-2.5 py-0.5 rounded-full">
+            ⏳ Conectando...
+          </span>
+        </div>
+        <p class="text-sm text-slate-400 mt-0.5">Bogotá D.C. (UTC-5) | Sincronización en Vivo con Google Sheets</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button onclick="abrirModalGuia()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 text-sm px-3.5 py-2 rounded-lg font-medium transition flex items-center gap-1.5">
-          <span>📱</span> Instalar en Celular
+        <button onclick="sincronizarNube()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-emerald-400 text-sm px-3.5 py-2 rounded-lg font-medium transition flex items-center gap-1.5">
+          <span>↻</span> Sincronizar
         </button>
         <button onclick="descargarInforme()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-sm px-4 py-2 rounded-lg font-medium transition shadow flex items-center gap-1.5">
           <span>📄</span> Informe Ejecutivo
@@ -108,21 +113,21 @@
       </div>
     </section>
 
-    <!-- VISTA 2: CLASIFICACIÓN RÁPIDA (1 TOQUE) -->
+    <!-- VISTA 2: CLASIFICACIÓN RÁPIDA (1 TOQUE EN LA NUBE) -->
     <section id="vista-decision" class="space-y-4 hidden">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h3 class="text-base font-semibold text-slate-200">Bandeja de Clasificación Rápida a 1 Toque</h3>
-          <p class="text-xs text-slate-400">Toca el botón correspondiente para clasificar y guardar la regla de aprendizaje.</p>
+          <p class="text-xs text-slate-400">Cada toque actualiza tu Google Sheet y entrena las reglas automáticas.</p>
         </div>
-        <button onclick="simularNuevaAlerta()" class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-lg transition">
-          + Simular Alerta Entrante
+        <button onclick="registrarMovimientoManual()" class="text-xs bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-medium transition">
+          + Registrar Movimiento Rápido
         </button>
       </div>
       
       <div class="space-y-3 mt-4" id="contenedor-clasificacion">
         <div class="p-6 text-center border border-dashed border-slate-700 rounded-xl text-slate-400 text-sm">
-          ✔ No hay movimientos pendientes. Todas las alertas están clasificadas.
+          ✔ No hay movimientos pendientes en la nube.
         </div>
       </div>
     </section>
@@ -243,29 +248,18 @@
 
   </div>
 
-  <!-- MODAL GUÍA INSTALACIÓN -->
-  <div id="modal-guia" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
-    <div class="bg-slate-800 border border-slate-700 max-w-md w-full rounded-2xl p-6 space-y-4">
-      <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-        <h3 class="font-bold text-lg text-emerald-400">Instalar PWA en tu Celular</h3>
-        <button onclick="cerrarModalGuia()" class="text-slate-400 hover:text-white text-xl">×</button>
-      </div>
-      <div class="space-y-3 text-sm text-slate-300">
-        <p><strong class="text-white">1. En iPhone (Safari):</strong><br>Abre el enlace público de GitHub Pages en Safari, toca el botón <strong>Compartir</strong> (cuadrado con flecha hacia arriba) y elige <strong>"Agregar al inicio"</strong>.</p>
-        <p><strong class="text-white">2. En Android (Chrome):</strong><br>Abre el enlace en Chrome, toca los tres puntos arriba a la derecha y selecciona <strong>"Instalar aplicación"</strong>.</p>
-      </div>
-      <button onclick="cerrarModalGuia()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg text-sm">Entendido</button>
-    </div>
-  </div>
-
   <script>
+    // URL DE TU API WEB DE GOOGLE APPS SCRIPT
+    const API_URL = 'https://script.google.com/macros/s/AKfycbx1X-D3CNyFchj8uhkxVTq4pU0SuWhZGuY5mfGgH8xFToQuohUK6gIA9HwSIgBFykuE6Q/exec';
+
     let mesActual = 'nov';
     let chartCatInstance = null;
+    let chartHistInstance = null;
 
     const datosMeses = {
       ago: {
         titulo: 'Agosto 2026',
-        gasto: '$4.820.000',
+        gastoNum: 4820000,
         subGasto: '✔ Excluye préstamos y fondos puente',
         rendimientos: '$180.000',
         rendimientosSub: 'Óscar ($100k) + otros',
@@ -282,7 +276,7 @@
       },
       sep: {
         titulo: 'Septiembre 2026',
-        gasto: '$5.110.000',
+        gastoNum: 5110000,
         subGasto: '✔ Excluye préstamos y fondos puente',
         rendimientos: '$210.000',
         rendimientosSub: 'Óscar ($100k) + Yorlady ($110k)',
@@ -299,7 +293,7 @@
       },
       oct: {
         titulo: 'Octubre 2026',
-        gasto: '$6.340.000',
+        gastoNum: 6340000,
         subGasto: '✔ Excluye préstamos y fondos puente',
         rendimientos: '$185.000',
         rendimientosSub: 'Intereses cobrados',
@@ -316,13 +310,14 @@
       },
       nov: {
         titulo: 'Noviembre 2026 (En curso)',
-        gasto: '$1.514.714',
-        subGasto: '✔ Incluye ajuste $50.000 Wilmer E.',
+        gastoBase: 1514714,
+        gastoNum: 1514714,
+        subGasto: '✔ Sincronizado con Google Sheets',
         rendimientos: '$332.334',
         rendimientosSub: 'Óscar ($100k) + Yorlady ($232k)',
         estado: 'CUENTAS CONSOLIDADAS - OK',
         estadoSub: 'Diferencia $0 COP | Cuentas al día',
-        comercios: [
+        comerciosBase: [
           { nombre: 'D1 Montevideo (2 compras)', monto: '$407.660 COP' },
           { nombre: 'Temu Compras', monto: '$228.373 COP' },
           { nombre: 'Pepe Ganga Toys', monto: '$131.759 COP' },
@@ -330,10 +325,149 @@
           { nombre: 'Alimentos rápidos / Arepas / Huevos', monto: '$51.636 COP' },
           { nombre: 'Transporte Uber', monto: '$12.950 COP' }
         ],
+        comercios: [],
         grafico: [407660, 360132, 50000, 51636, 12950],
         labelsGrafico: ['Supermercados (D1)', 'Compras (Temu/PepeGanga)', 'Gastos Wilmer', 'Comida rápida', 'Uber']
       }
     };
+
+    datosMeses.nov.comercios = [...datosMeses.nov.comerciosBase];
+
+    function formatoCOP(valor) {
+      return '$' + Math.round(valor).toLocaleString('es-CO');
+    }
+
+    // SINCRONIZACIÓN EN VIVO CON GOOGLE APPS SCRIPT
+    async function sincronizarNube() {
+      const badgeNube = document.getElementById('status-nube');
+      badgeNube.innerHTML = '⏳ Sincronizando...';
+      badgeNube.className = 'text-[11px] bg-amber-500/20 border border-amber-500/40 text-amber-300 px-2.5 py-0.5 rounded-full';
+
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+
+        if (data.status === 'ok') {
+          badgeNube.innerHTML = '🟢 Nube Conectada';
+          badgeNube.className = 'text-[11px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-0.5 rounded-full';
+
+          const movimientos = data.movimientos || [];
+          procesarDatosNube(movimientos);
+        }
+      } catch (err) {
+        badgeNube.innerHTML = '🟡 Modo Local';
+        badgeNube.className = 'text-[11px] bg-slate-800 border border-slate-600 text-slate-400 px-2.5 py-0.5 rounded-full';
+      }
+    }
+
+    function procesarDatosNube(movimientos) {
+      let extraNov = 0;
+      const nuevosComerciosNov = [];
+      const pendientes = [];
+
+      movimientos.forEach(m => {
+        const monto = parseFloat(m.Monto) || 0;
+        if (m.Tipo === 'PENDIENTE') {
+          pendientes.push(m);
+        } else if (m.Tipo === 'Gasto Real' && m.Mes === 'nov') {
+          extraNov += monto;
+          nuevosComerciosNov.push({
+            nombre: `${m.Descripcion} (${m.Banco})`,
+            monto: `${formatoCOP(monto)} COP`
+          });
+        }
+      });
+
+      datosMeses.nov.gastoNum = datosMeses.nov.gastoBase + extraNov;
+      datosMeses.nov.comercios = [...nuevosComerciosNov, ...datosMeses.nov.comerciosBase];
+
+      renderizarBandejaPendientes(pendientes);
+      actualizarVistaMes(mesActual);
+      actualizarGraficoHistorico();
+    }
+
+    function renderizarBandejaPendientes(pendientes) {
+      const cont = document.getElementById('contenedor-clasificacion');
+      const badge = document.getElementById('contador-decisiones');
+      const badgeNov = document.getElementById('badge-nov');
+
+      if (pendientes.length === 0) {
+        cont.innerHTML = '<div class="p-6 text-center border border-dashed border-slate-700 rounded-xl text-emerald-400 text-sm">✔ No hay movimientos pendientes en Google Sheets.</div>';
+        badge.className = 'bg-emerald-500/20 text-emerald-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold';
+        badge.innerText = '✔';
+        badgeNov.innerText = '✔ OK';
+        return;
+      }
+
+      badge.className = 'bg-amber-500/20 text-amber-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold';
+      badge.innerText = pendientes.length;
+      badgeNov.innerText = `⚠️ ${pendientes.length}`;
+
+      cont.innerHTML = pendientes.map(p => `
+        <div id="card-${p.ID}" class="tarjeta-movimiento bg-slate-800 border border-slate-700 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono">${p.Banco}</span>
+              <span class="text-xs text-slate-400">${p.Fecha}</span>
+            </div>
+            <p class="font-bold text-white text-base mt-1">${formatoCOP(p.Monto)} COP</p>
+            <p class="text-xs text-slate-300">${p.Descripcion}</p>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="clasificarEnNube('${p.ID}', 'Gasto Real', '${p.Descripcion}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">🛒 Gasto Real</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Familiar', '${p.Descripcion}')" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">🏠 Familiar</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Crespibank', '${p.Descripcion}')" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💼 Crespibank</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Puente Quiminsa', '${p.Descripcion}')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Quiminsa</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function clasificarEnNube(id, tipo, descripcion) {
+      const card = document.getElementById(`card-${id}`);
+      if (card) {
+        card.style.opacity = '0.4';
+        card.innerHTML = `<p class="text-xs text-emerald-400 font-semibold">⏳ Guardando "${tipo}" en Google Sheets y entrenando regla...</p>`;
+      }
+
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: id,
+            tipo: tipo,
+            descripcion: descripcion,
+            aprenderPatron: true
+          })
+        });
+        setTimeout(() => sincronizarNube(), 1200);
+      } catch (e) {
+        sincronizarNube();
+      }
+    }
+
+    async function registrarMovimientoManual() {
+      const comercio = prompt('Nombre del comercio o destinatario:');
+      if (!comercio) return;
+      const montoStr = prompt('Monto en COP (solo números, ej: 45000):');
+      const monto = parseFloat(montoStr);
+      if (!monto) return;
+
+      await fetch(API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accion: 'nuevo_correo',
+          asunto: 'Registro Manual App',
+          cuerpo: `Compra en ${comercio} por $${monto}`,
+          comercio: comercio
+        })
+      });
+      setTimeout(() => sincronizarNube(), 1200);
+    }
 
     function cambiarPestana(pestana) {
       ['mes', 'decision', 'crespibank', 'quiminsa', 'ano'].forEach(p => {
@@ -365,7 +499,7 @@
       if (!data) return;
 
       document.getElementById('lbl-gasto-mes').innerText = `Gasto Real Confirmado (${data.titulo})`;
-      document.getElementById('monto-gasto-mes').innerHTML = `${data.gasto} <span class="text-xs font-normal text-slate-400">COP</span>`;
+      document.getElementById('monto-gasto-mes').innerHTML = `${formatoCOP(data.gastoNum)} <span class="text-xs font-normal text-slate-400">COP</span>`;
       document.getElementById('sub-gasto-mes').innerText = data.subGasto;
       
       document.getElementById('monto-rendimientos').innerHTML = `${data.rendimientos} <span class="text-xs font-normal text-slate-400">COP</span>`;
@@ -386,9 +520,7 @@
     }
 
     function actualizarGraficoCategorias(labels, data) {
-      if (chartCatInstance) {
-        chartCatInstance.destroy();
-      }
+      if (chartCatInstance) chartCatInstance.destroy();
       const ctx = document.getElementById('chartCategorias').getContext('2d');
       chartCatInstance = new Chart(ctx, {
         type: 'doughnut',
@@ -402,90 +534,20 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } }
-          }
+          plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } }
         }
       });
     }
 
-    function clasificarMovimiento(cardId, tipo, monto, comercio) {
-      const card = document.getElementById(cardId);
-      if (card) {
-        card.style.transition = 'all 0.3s ease';
-        card.style.opacity = '0';
-        setTimeout(() => {
-          card.remove();
-          const cont = document.getElementById('contenedor-clasificacion');
-          if (!cont.querySelector('.tarjeta-movimiento')) {
-            cont.innerHTML = '<div class="p-6 text-center border border-dashed border-slate-700 rounded-xl text-emerald-400 text-sm">✔ Bandeja vacía. Todo clasificado con éxito.</div>';
-            const badge = document.getElementById('contador-decisiones');
-            badge.className = 'bg-emerald-500/20 text-emerald-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold';
-            badge.innerText = '✔';
-          }
-        }, 300);
-      }
-      const reglas = JSON.parse(localStorage.getItem('reglas_clasificacion') || '{}');
-      reglas[comercio] = tipo;
-      localStorage.setItem('reglas_clasificacion', JSON.stringify(reglas));
-    }
-
-    function simularNuevaAlerta() {
-      const cont = document.getElementById('contenedor-clasificacion');
-      const id = 'mov-' + Date.now();
-      const html = `
-        <div id="${id}" class="tarjeta-movimiento bg-slate-800 border border-slate-700 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-          <div>
-            <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono">Bancolombia</span>
-            <p class="font-bold text-white text-base mt-1">$45.000 COP</p>
-            <p class="text-xs text-slate-300">Pago QR / Panadería Granjas</p>
-          </div>
-          <div class="flex flex-wrap gap-1.5">
-            <button onclick="clasificarMovimiento('${id}', 'Gasto Real', 45000, 'Panadería Granjas')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">🛒 Gasto Real</button>
-            <button onclick="clasificarMovimiento('${id}', 'Familiar', 45000, 'Panadería Granjas')" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">🏠 Familiar</button>
-            <button onclick="clasificarMovimiento('${id}', 'Crespibank', 45000, 'Panadería Granjas')" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💼 Crespibank</button>
-            <button onclick="clasificarMovimiento('${id}', 'Puente Quiminsa', 45000, 'Panadería Granjas')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Quiminsa</button>
-          </div>
-        </div>
-      `;
-      if (cont.innerHTML.includes('Bandeja vacía')) cont.innerHTML = html;
-      else cont.insertAdjacentHTML('afterbegin', html);
-      
-      const badge = document.getElementById('contador-decisiones');
-      badge.className = 'bg-amber-500/20 text-amber-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold';
-      badge.innerText = '1';
-    }
-
-    function abrirModalGuia() {
-      document.getElementById('modal-guia').classList.remove('hidden');
-      document.getElementById('modal-guia').classList.add('flex');
-    }
-
-    function cerrarModalGuia() {
-      document.getElementById('modal-guia').classList.add('hidden');
-      document.getElementById('modal-guia').classList.remove('flex');
-    }
-
-    function descargarInforme() {
-      const d = datosMeses[mesActual];
-      const contenido = `INFORME EJECUTIVO - CORTE ${d.titulo.toUpperCase()}\nEstado: ${d.estado}\n\n1. Gasto Real Confirmado: ${d.gasto} COP\n2. Rendimientos Crespibank: ${d.rendimientos} COP\n3. Saldo por Cobrar Quiminsa SAS: $673.354 COP\n4. Estado de Auditoría: ${d.estadoSub}`;
-      const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `informe_ejecutivo_${mesActual}_2026.txt`;
-      a.click();
-    }
-
-    window.onload = function() {
-      actualizarVistaMes('nov');
-
-      new Chart(document.getElementById('chartHistorico'), {
+    function actualizarGraficoHistorico() {
+      if (chartHistInstance) chartHistInstance.destroy();
+      chartHistInstance = new Chart(document.getElementById('chartHistorico'), {
         type: 'bar',
         data: {
           labels: ['Ago', 'Sep', 'Oct', 'Nov (En curso)'],
           datasets: [{
             label: 'Gasto Consolidado (COP)',
-            data: [4820000, 5110000, 6340000, 1514714],
+            data: [4820000, 5110000, 6340000, datosMeses.nov.gastoNum],
             backgroundColor: '#10b981'
           }]
         },
@@ -499,6 +561,22 @@
           plugins: { legend: { display: false } }
         }
       });
+    }
+
+    function descargarInforme() {
+      const d = datosMeses[mesActual];
+      const contenido = `INFORME EJECUTIVO - CORTE ${d.titulo.toUpperCase()}\nEstado: ${d.estado}\n\n1. Gasto Real Confirmado: ${formatoCOP(d.gastoNum)} COP\n2. Rendimientos Crespibank: ${d.rendimientos} COP\n3. Saldo por Cobrar Quiminsa SAS: $673.354 COP\n4. Estado de Auditoría: ${d.estadoSub}`;
+      const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `informe_ejecutivo_${mesActual}_2026.txt`;
+      a.click();
+    }
+
+    window.onload = function() {
+      actualizarVistaMes('nov');
+      actualizarGraficoHistorico();
+      sincronizarNube();
     };
   </script>
 </body>
