@@ -123,7 +123,7 @@
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h3 class="text-base font-semibold text-slate-200">Bandeja de Clasificación Rápida (Ingresos y Egresos)</h3>
-          <p class="text-xs text-slate-400">Cada toque actualiza tu Google Sheet y guarda la regla automática para el futuro.</p>
+          <p class="text-xs text-slate-400">Al clasificar en Crespibank se abrirá la alerta para vincular al prestatario y alimentar la cartera.</p>
         </div>
         <button onclick="registrarMovimientoManual()" class="text-xs bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-medium transition">
           + Registrar Movimiento Rápido
@@ -142,8 +142,8 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-slate-800/60 border border-purple-500/30 p-5 rounded-xl">
           <p class="text-xs text-purple-300">Cartera Activa Colocada</p>
-          <p class="text-2xl font-bold text-white mt-1">$5.200.000 <span class="text-xs font-normal text-slate-400">COP</span></p>
-          <p class="text-xs text-slate-400 mt-2">José Cananias ($1.5M) + saldo cartera activa</p>
+          <p class="text-2xl font-bold text-white mt-1" id="crespibank-cartera-activa">$1.500.000 <span class="text-xs font-normal text-slate-400">COP</span></p>
+          <p class="text-xs text-slate-400 mt-2">Capital vivo en calle (sincronizado)</p>
         </div>
         <div class="bg-slate-800/60 border border-emerald-500/30 p-5 rounded-xl">
           <p class="text-xs text-emerald-300">Intereses Efectivos Cobrados</p>
@@ -151,14 +151,17 @@
           <p class="text-xs text-slate-400 mt-2">Óscar ($100k) + Yorlady ($232.334)</p>
         </div>
         <div class="bg-slate-800/60 border border-sky-500/30 p-5 rounded-xl">
-          <p class="text-xs text-sky-300">Capital Recuperado en Noviembre</p>
+          <p class="text-xs text-sky-300">Capital Recuperado / Otros Ingresos</p>
           <p class="text-2xl font-bold text-white mt-1" id="crespibank-capital-total">$840.000 <span class="text-xs font-normal text-slate-400">COP</span></p>
-          <p class="text-xs text-emerald-400 mt-2">Camilo Cárdenas ($440k) y Gerson ($400k) en $0</p>
+          <p class="text-xs text-emerald-400 mt-2">Abonos a capital recibidos en el mes</p>
         </div>
       </div>
 
       <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
-        <h3 class="text-sm font-semibold text-slate-200 mb-3">Libreta Operativa Crespibank</h3>
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-sm font-semibold text-slate-200">Libreta Operativa Crespibank (En Vivo)</h3>
+          <span class="text-[11px] text-purple-300 bg-purple-500/10 border border-purple-500/30 px-2.5 py-0.5 rounded-full">Pestaña: Cartera_Crespibank</span>
+        </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-sm text-slate-300">
             <thead class="text-xs uppercase bg-slate-900/50 text-slate-400 border-b border-slate-700">
@@ -166,37 +169,12 @@
                 <th class="p-3">ID</th>
                 <th class="p-3">Deudor</th>
                 <th class="p-3">Deuda Inicial</th>
-                <th class="p-3">Interés Fijo Mensual</th>
+                <th class="p-3">Interés Mensual</th>
                 <th class="p-3">Saldo Capital</th>
                 <th class="p-3">Estado</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-700/50">
-              <tr>
-                <td class="p-3 font-mono text-xs text-purple-400">p-003</td>
-                <td class="p-3 font-medium text-white">José Cananias</td>
-                <td class="p-3">$1.500.000</td>
-                <td class="p-3 text-emerald-400 font-semibold">$30.000 / mes</td>
-                <td class="p-3 font-bold text-white">$1.500.000</td>
-                <td class="p-3"><span class="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">Desembolsado 09/Nov</span></td>
-              </tr>
-              <tr>
-                <td class="p-3 font-mono text-xs text-purple-400">p-004</td>
-                <td class="p-3 font-medium text-white">Camilo Cárdenas</td>
-                <td class="p-3">$440.000</td>
-                <td class="p-3 text-slate-400">-</td>
-                <td class="p-3 font-bold text-emerald-400">$0</td>
-                <td class="p-3"><span class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded">Cancelado (03/Nov)</span></td>
-              </tr>
-              <tr>
-                <td class="p-3 font-mono text-xs text-purple-400">p-005</td>
-                <td class="p-3 font-medium text-white">Gerson Delgadillo</td>
-                <td class="p-3">$400.000</td>
-                <td class="p-3 text-slate-400">-</td>
-                <td class="p-3 font-bold text-emerald-400">$0</td>
-                <td class="p-3"><span class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded">Devuelto (04/Nov)</span></td>
-              </tr>
-            </tbody>
+            <tbody id="tabla-cartera-crespibank" class="divide-y divide-slate-700/50"></tbody>
           </table>
         </div>
       </div>
@@ -253,12 +231,58 @@
 
   </div>
 
+  <!-- MODAL DE ALERTA CRESPIBANK (ASIGNAR CLIENTE E INTERÉS) -->
+  <div id="modal-crespibank" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-purple-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+        <h3 class="text-base font-bold text-purple-300 flex items-center gap-2">
+          <span>💼</span> Asignar Crédito Crespibank
+        </h3>
+        <button onclick="cerrarModalCrespibank()" class="text-slate-400 hover:text-white text-sm">✕</button>
+      </div>
+
+      <div class="bg-slate-900/70 p-3 rounded-lg border border-slate-700 text-xs space-y-1">
+        <p class="text-slate-400">Movimiento detectado:</p>
+        <p class="text-white font-bold text-base" id="modal-crespibank-monto">$0 COP</p>
+        <p class="text-slate-300" id="modal-crespibank-desc">-</p>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">¿A nombre de quién queda el crédito?</label>
+          <select id="select-cliente-crespibank" onchange="toggleInputNuevoCliente()" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-purple-400 outline-none">
+            <option value="José Cananias">José Cananias</option>
+            <option value="Camilo Cárdenas">Camilo Cárdenas</option>
+            <option value="Óscar Hernández">Óscar Hernández</option>
+            <option value="Gerson Delgadillo">Gerson Delgadillo</option>
+            <option value="Wilmer">Wilmer</option>
+            <option value="Yorlady">Yorlady</option>
+            <option value="NUEVO">+ Escribir otro nombre...</option>
+          </select>
+          <input type="text" id="input-nuevo-cliente" placeholder="Nombre completo del prestatario" class="hidden mt-2 w-full bg-slate-900 border border-purple-500/50 rounded-lg p-2.5 text-sm text-white outline-none">
+        </div>
+
+        <div id="bloque-interes-crespibank">
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Interés fijo mensual pactado (COP)</label>
+          <input type="number" id="input-interes-mensual" placeholder="Ej: 30000" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-purple-400 outline-none">
+          <p class="text-[11px] text-slate-400 mt-1">Se registrará automáticamente en la pestaña Cartera_Crespibank.</p>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="cerrarModalCrespibank()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-xs font-semibold text-slate-200 rounded-lg transition">Cancelar</button>
+        <button onclick="confirmarGuardadoCrespibank()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white rounded-lg shadow transition">✔ Guardar en Cartera</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbx1X-D3CNyFchj8uhkxVTq4pU0SuWhZGuY5mfGgH8xFToQuohUK6gIA9HwSIgBFykuE6Q/exec';
 
     let mesActual = 'nov';
     let chartCatInstance = null;
     let chartHistInstance = null;
+    let txCrespibankEnCurso = null;
 
     const datosMeses = {
       ago: {
@@ -364,7 +388,7 @@
         if (data.status === 'ok') {
           badgeNube.innerHTML = '🟢 Nube Conectada';
           badgeNube.className = 'text-[11px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-0.5 rounded-full';
-          procesarDatosNube(data.movimientos || []);
+          procesarDatosNube(data.movimientos || [], data.cartera || []);
         }
       } catch (err) {
         badgeNube.innerHTML = '🟡 Modo Local';
@@ -372,7 +396,7 @@
       }
     }
 
-    function procesarDatosNube(movimientos) {
+    function procesarDatosNube(movimientos, cartera) {
       let extraGastoNov = 0;
       let extraHogarNov = 0;
       let extraInteresNov = 0;
@@ -418,9 +442,40 @@
       document.getElementById('crespibank-interes-total').innerHTML = `${formatoCOP(datosMeses.nov.rendimientosNum)} <span class="text-xs font-normal text-slate-400">COP</span>`;
       document.getElementById('crespibank-capital-total').innerHTML = `${formatoCOP(datosMeses.nov.otrosIngresosNum)} <span class="text-xs font-normal text-slate-400">COP</span>`;
 
+      renderizarCarteraCrespibank(cartera);
       renderizarBandejaPendientes(pendientes);
       actualizarVistaMes(mesActual);
       actualizarGraficoHistorico();
+    }
+
+    function renderizarCarteraCrespibank(cartera) {
+      const tbody = document.getElementById('tabla-cartera-crespibank');
+      if (!cartera || cartera.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 text-xs">Ejecuta inicializarCarteraCrespibank() en Apps Script para cargar la libreta.</td></tr>';
+        return;
+      }
+
+      let totalActivo = 0;
+      tbody.innerHTML = cartera.map(c => {
+        const saldo = parseFloat(c.Saldo_Capital) || 0;
+        if (c.Estado === 'Activo') totalActivo += saldo;
+        const badgeEstado = c.Estado === 'Activo'
+          ? `<span class="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">Activo (${c.Fecha_Desembolso})</span>`
+          : `<span class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded">${c.Estado}</span>`;
+
+        return `
+          <tr>
+            <td class="p-3 font-mono text-xs text-purple-400">${c.ID_Prestamo}</td>
+            <td class="p-3 font-medium text-white">${c.Cliente}</td>
+            <td class="p-3">${formatoCOP(c.Capital_Inicial)}</td>
+            <td class="p-3 text-emerald-400 font-semibold">${c.Interes_Mensual > 0 ? formatoCOP(c.Interes_Mensual) + ' / mes' : '-'}</td>
+            <td class="p-3 font-bold ${saldo > 0 ? 'text-white' : 'text-emerald-400'}">${formatoCOP(saldo)}</td>
+            <td class="p-3">${badgeEstado}</td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('crespibank-cartera-activa').innerHTML = `${formatoCOP(totalActivo)} <span class="text-xs font-normal text-slate-400">COP</span>`;
     }
 
     function renderizarBandejaPendientes(pendientes) {
@@ -446,18 +501,20 @@
           ? '<span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">↓ INGRESO DETECTADO</span>'
           : '<span class="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded font-bold">↑ PAGO / EGRESO</span>';
 
+        const descEscapada = (p.Descripcion || '').replace(/'/g, "\\'");
+
         const botones = esIngreso
           ? `
-            <button onclick="clasificarEnNube('${p.ID}', 'Crespibank_Interes', 'Rendimientos', '${p.Descripcion}')" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💰 Interés Crespibank</button>
-            <button onclick="clasificarEnNube('${p.ID}', 'Crespibank_Capital', 'Abono Capital', '${p.Descripcion}')" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">💵 Abono Capital</button>
-            <button onclick="clasificarEnNube('${p.ID}', 'Reintegro Quiminsa', 'Corporativo', '${p.Descripcion}')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Reintegro Quiminsa</button>
-            <button onclick="clasificarEnNube('${p.ID}', 'Otro_Ingreso', 'Otros Ingresos', '${p.Descripcion}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">📥 Otro Ingreso</button>
+            <button onclick="abrirModalCrespibank('${p.ID}', 'Crespibank_Interes', 'Rendimientos', '${descEscapada}', ${p.Monto})" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💰 Interés Crespibank</button>
+            <button onclick="abrirModalCrespibank('${p.ID}', 'Crespibank_Capital', 'Abono Capital', '${descEscapada}', ${p.Monto})" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">💵 Abono Capital</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Reintegro Quiminsa', 'Corporativo', '${descEscapada}')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Reintegro Quiminsa</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Otro_Ingreso', 'Otros Ingresos', '${descEscapada}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">📥 Otro Ingreso</button>
           `
           : `
-            <button onclick="clasificarEnNube('${p.ID}', 'Gasto Real', 'Hogar / Familia', '${p.Descripcion}')" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">🏠 Hogar / Familia</button>
-            <button onclick="clasificarEnNube('${p.ID}', 'Gasto Real', 'Gasto Personal', '${p.Descripcion}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">🛒 Gasto Personal</button>
-            <button onclick="clasificarEnNube('${p.ID}', 'Crespibank_Desembolso', 'Préstamo Nuevo', '${p.Descripcion}')" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💼 Préstamo Crespibank</button>
-            <button onclick="clasificarEnNube('${p.ID}', 'Puente Quiminsa', 'Corporativo', '${p.Descripcion}')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Puente Quiminsa</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Gasto Real', 'Hogar / Familia', '${descEscapada}')" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">🏠 Hogar / Familia</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Gasto Real', 'Gasto Personal', '${descEscapada}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">🛒 Gasto Personal</button>
+            <button onclick="abrirModalCrespibank('${p.ID}', 'Crespibank_Desembolso', 'Préstamo Nuevo', '${descEscapada}', ${p.Monto})" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💼 Préstamo Crespibank</button>
+            <button onclick="clasificarEnNube('${p.ID}', 'Puente Quiminsa', 'Corporativo', '${descEscapada}')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Puente Quiminsa</button>
           `;
 
         return `
@@ -477,6 +534,79 @@
           </div>
         `;
       }).join('');
+    }
+
+    // LÓGICA DE LA ALERTA / MODAL CRESPIBANK
+    function abrirModalCrespibank(id, tipo, categoria, descripcion, monto) {
+      txCrespibankEnCurso = { id, tipo, categoria, descripcion, monto };
+      document.getElementById('modal-crespibank-monto').innerText = `${formatoCOP(monto)} COP`;
+      document.getElementById('modal-crespibank-desc').innerText = descripcion;
+      document.getElementById('input-interes-mensual').value = Math.round(monto * 0.02); // Sugerencia automática del 2%
+
+      const bloqueInteres = document.getElementById('bloque-interes-crespibank');
+      if (tipo === 'Crespibank_Desembolso') {
+        bloqueInteres.classList.remove('hidden');
+      } else {
+        bloqueInteres.classList.add('hidden');
+      }
+
+      const modal = document.getElementById('modal-crespibank');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarModalCrespibank() {
+      const modal = document.getElementById('modal-crespibank');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      txCrespibankEnCurso = null;
+    }
+
+    function toggleInputNuevoCliente() {
+      const sel = document.getElementById('select-cliente-crespibank').value;
+      const inp = document.getElementById('input-nuevo-cliente');
+      if (sel === 'NUEVO') {
+        inp.classList.remove('hidden');
+        inp.focus();
+      } else {
+        inp.classList.add('hidden');
+      }
+    }
+
+    async function confirmarGuardadoCrespibank() {
+      if (!txCrespibankEnCurso) return;
+      const sel = document.getElementById('select-cliente-crespibank').value;
+      const cliente = sel === 'NUEVO' ? document.getElementById('input-nuevo-cliente').value.trim() : sel;
+      if (!cliente) {
+        alert('Por favor escribe el nombre del cliente.');
+        return;
+      }
+
+      const interesMensual = parseFloat(document.getElementById('input-interes-mensual').value) || 0;
+      const { id, tipo, categoria, descripcion } = txCrespibankEnCurso;
+      cerrarModalCrespibank();
+
+      const card = document.getElementById(`card-${id}`);
+      if (card) {
+        card.style.opacity = '0.4';
+        card.innerHTML = `<p class="text-xs text-purple-300 font-semibold">⏳ Registrando crédito a nombre de ${cliente} en Cartera_Crespibank...</p>`;
+      }
+
+      await fetch(API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: id,
+          tipo: tipo,
+          categoria: categoria,
+          descripcion: descripcion,
+          cliente: cliente,
+          interesMensual: interesMensual,
+          aprenderPatron: false
+        })
+      });
+      setTimeout(() => sincronizarNube(), 1300);
     }
 
     async function clasificarEnNube(id, tipo, categoria, descripcion) {
