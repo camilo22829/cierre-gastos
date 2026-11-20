@@ -32,7 +32,7 @@
             ⏳ Conectando...
           </span>
         </div>
-        <p class="text-sm text-slate-400 mt-0.5">Bogotá D.C. (UTC-5) | Sincronización en Vivo con Google Sheets</p>
+        <p class="text-sm text-slate-400 mt-0.5">Bogotá D.C. (UTC-5) | Revisión Activa y Sincronización en Vivo</p>
       </div>
       <div class="flex flex-wrap gap-2">
         <button onclick="sincronizarNube()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-emerald-400 text-sm px-3.5 py-2 rounded-lg font-medium transition flex items-center gap-1.5">
@@ -65,7 +65,7 @@
     <nav class="flex space-x-2 border-b border-slate-800 mb-6 overflow-x-auto pb-2 text-sm">
       <button onclick="cambiarPestana('mes')" id="tab-mes" class="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 font-semibold transition">Mes Vivo</button>
       <button onclick="cambiarPestana('decision')" id="tab-decision" class="px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-400 transition flex items-center gap-1.5">
-        <span>Clasificación Rápida</span>
+        <span>Revisión & Clasificación</span>
         <span id="contador-decisiones" class="bg-emerald-500/20 text-emerald-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold">✔</span>
       </button>
       <button onclick="cambiarPestana('crespibank')" id="tab-crespibank" class="px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-400 transition flex items-center gap-1">
@@ -118,12 +118,12 @@
       </div>
     </section>
 
-    <!-- VISTA 2: CLASIFICACIÓN RÁPIDA (1 TOQUE EN LA NUBE) -->
+    <!-- VISTA 2: REVISIÓN Y CLASIFICACIÓN RÁPIDA (100% REVISIÓN OBLIGATORIA) -->
     <section id="vista-decision" class="space-y-4 hidden">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h3 class="text-base font-semibold text-slate-200">Bandeja de Clasificación Rápida (Ingresos y Egresos)</h3>
-          <p class="text-xs text-slate-400">Al seleccionar Crespibank en un egreso se abrirá el formulario para crear el crédito y definir su tasa % mensual.</p>
+          <h3 class="text-base font-semibold text-slate-200">Bandeja de Revisión Obligatoria (Ingresos y Egresos)</h3>
+          <p class="text-xs text-slate-400">Todo movimiento detectado pasa por tu validación aquí y guarda la sugerencia predeterminada para futuras alertas.</p>
         </div>
         <button onclick="registrarMovimientoManual()" class="text-xs bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-medium transition">
           + Registrar Movimiento Rápido
@@ -132,7 +132,7 @@
       
       <div class="space-y-3 mt-4" id="contenedor-clasificacion">
         <div class="p-6 text-center border border-dashed border-slate-700 rounded-xl text-slate-400 text-sm">
-          ✔ No hay movimientos pendientes en la nube.
+          ✔ No hay movimientos pendientes por revisar en Google Sheets.
         </div>
       </div>
     </section>
@@ -185,42 +185,28 @@
       </div>
     </section>
 
-    <!-- VISTA 4: PUENTE QUIMINSA -->
+    <!-- VISTA 4: PUENTE QUIMINSA (CON INGRESO MANUAL Y CRUCE POR OTRO MEDIO) -->
     <section id="vista-quiminsa" class="space-y-6 hidden">
       <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
-        <div class="flex flex-col sm:flex-row justify-between items-start gap-2">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
           <div>
             <h3 class="text-base font-semibold text-slate-200">Balance Fondos Puente — Quiminsa SAS</h3>
-            <p class="text-xs text-slate-400 mt-0.5">Gastos pagados con fondos personales pendientes de reintegro por la empresa.</p>
+            <p class="text-xs text-slate-400 mt-0.5">Control de gastos asumidos por ti y cruces de desembolsos recibidos por cualquier medio.</p>
           </div>
-          <span class="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold rounded-lg">
-            Saldo por Cobrar: $673.354 COP
-          </span>
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="badge-saldo-quiminsa" class="px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold rounded-lg">
+              Saldo por Cobrar: $673.354 COP
+            </span>
+            <button onclick="abrirModalQuiminsa('Gasto Puente')" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition">
+              + Gasto Manual
+            </button>
+            <button onclick="abrirModalQuiminsa('Reintegro / Cruce')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition">
+              ✔ Cruzar Desembolso
+            </button>
+          </div>
         </div>
 
-        <div class="mt-5 space-y-3">
-          <div class="bg-slate-900/50 p-3.5 rounded-lg border border-slate-800 flex justify-between items-center text-sm">
-            <div>
-              <p class="font-medium text-white">Tiquetes Avianca S.A.</p>
-              <p class="text-xs text-slate-400">07/Nov/2026 | Tarjeta Visa Infinite</p>
-            </div>
-            <span class="font-semibold text-amber-400">$651.830 COP</span>
-          </div>
-          <div class="bg-slate-900/50 p-3.5 rounded-lg border border-slate-800 flex justify-between items-center text-sm">
-            <div>
-              <p class="font-medium text-white">Consumo El Maná Coffee and Bru</p>
-              <p class="text-xs text-slate-400">06/Nov/2026 | Tarjeta Visa Infinite</p>
-            </div>
-            <span class="font-semibold text-amber-400">$21.524 COP</span>
-          </div>
-          <div class="bg-slate-900/50 p-3.5 rounded-lg border border-slate-800 flex justify-between items-center text-sm opacity-60">
-            <div>
-              <p class="font-medium text-white line-through">Devolución Anticipo Quiminsa SAS</p>
-              <p class="text-xs text-slate-400">04/Nov/2026 | Liquidado</p>
-            </div>
-            <span class="font-semibold text-emerald-400">$2.380.000 (Saldado ✔)</span>
-          </div>
-        </div>
+        <div id="lista-movimientos-quiminsa" class="mt-5 space-y-3"></div>
       </div>
     </section>
 
@@ -236,7 +222,7 @@
 
   </div>
 
-  <!-- MODAL DE CREACIÓN / ASIGNACIÓN DE CRÉDITO CRESPIBANK -->
+  <!-- MODAL 1: CREACIÓN / ASIGNACIÓN DE CRÉDITO CRESPIBANK -->
   <div id="modal-crespibank" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-800 border border-purple-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-700 pb-3">
@@ -289,6 +275,45 @@
     </div>
   </div>
 
+  <!-- MODAL 2: PUENTE QUIMINSA (GASTO MANUAL O CRUCE DE DESEMBOLSO EXTERNO) -->
+  <div id="modal-quiminsa" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-amber-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+        <h3 class="text-base font-bold text-amber-300 flex items-center gap-2" id="modal-quiminsa-titulo">
+          <span>🏢</span> Registrar Movimiento Quiminsa
+        </h3>
+        <button onclick="cerrarModalQuiminsa()" class="text-slate-400 hover:text-white text-sm">✕</button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-quiminsa-concepto">Concepto o detalle del gasto / desembolso</label>
+          <input type="text" id="input-quiminsa-concepto" placeholder="Ej: Viáticos visita planta / Pago transferencia" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-amber-400 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Monto (COP)</label>
+          <input type="number" id="input-quiminsa-monto" placeholder="Ej: 250000" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-sm font-bold text-white focus:border-amber-400 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Medio de pago / recepción</label>
+          <select id="select-quiminsa-medio" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-amber-400 outline-none">
+            <option value="Efectivo / Caja Menor">Efectivo / Caja Menor</option>
+            <option value="Transferencia Otra Cuenta">Transferencia a otra cuenta</option>
+            <option value="Tarjeta Crédito Personal">Tarjeta de Crédito Personal</option>
+            <option value="Nequi / Daviplata">Nequi / Daviplata</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="cerrarModalQuiminsa()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-xs font-semibold text-slate-200 rounded-lg transition">Cancelar</button>
+        <button onclick="confirmarGuardadoQuiminsa()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white rounded-lg shadow transition">✔ Aplicar y Cruzar</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbx1X-D3CNyFchj8uhkxVTq4pU0SuWhZGuY5mfGgH8xFToQuohUK6gIA9HwSIgBFykuE6Q/exec';
 
@@ -296,6 +321,7 @@
     let chartCatInstance = null;
     let chartHistInstance = null;
     let txCrespibankEnCurso = null;
+    let tipoQuiminsaEnCurso = 'Gasto Puente';
 
     const datosMeses = {
       ago: {
@@ -401,7 +427,7 @@
         if (data.status === 'ok') {
           badgeNube.innerHTML = '🟢 Nube Conectada';
           badgeNube.className = 'text-[11px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-0.5 rounded-full';
-          procesarDatosNube(data.movimientos || [], data.cartera || []);
+          procesarDatosNube(data.movimientos || [], data.cartera || [], data.quiminsa || []);
         }
       } catch (err) {
         badgeNube.innerHTML = '🟡 Modo Local';
@@ -409,7 +435,7 @@
       }
     }
 
-    function procesarDatosNube(movimientos, cartera) {
+    function procesarDatosNube(movimientos, cartera, quiminsa) {
       let extraGastoNov = 0;
       let extraHogarNov = 0;
       let extraInteresNov = 0;
@@ -456,9 +482,56 @@
       document.getElementById('crespibank-capital-total').innerHTML = `${formatoCOP(datosMeses.nov.otrosIngresosNum)} <span class="text-xs font-normal text-slate-400">COP</span>`;
 
       renderizarCarteraCrespibank(cartera);
+      renderizarPuenteQuiminsa(quiminsa);
       renderizarBandejaPendientes(pendientes);
       actualizarVistaMes(mesActual);
       actualizarGraficoHistorico();
+    }
+
+    function renderizarPuenteQuiminsa(quiminsa) {
+      const lista = document.getElementById('lista-movimientos-quiminsa');
+      const badgeSaldo = document.getElementById('badge-saldo-quiminsa');
+
+      if (!quiminsa || quiminsa.length === 0) {
+        lista.innerHTML = '<p class="text-xs text-slate-400">Ejecuta inicializarPuenteQuiminsa() en Apps Script o registra un movimiento arriba.</p>';
+        return;
+      }
+
+      let saldoPendiente = 0;
+      lista.innerHTML = quiminsa.slice().reverse().map(q => {
+        const monto = parseFloat(q.Monto) || 0;
+        const esCruce = q.Tipo_Mov === 'Reintegro / Cruce';
+        if (esCruce) {
+          saldoPendiente -= monto;
+        } else {
+          saldoPendiente += monto;
+        }
+
+        const claseMonto = esCruce ? 'text-emerald-400' : 'text-amber-400';
+        const signo = esCruce ? '- ' : '+ ';
+        const badgeEstado = esCruce
+          ? '<span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-semibold">✔ Cruce / Reintegro</span>'
+          : '<span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-semibold">Pendiente Cobro</span>';
+
+        return `
+          <div class="bg-slate-900/60 p-3.5 rounded-lg border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-sm">
+            <div>
+              <div class="flex items-center gap-2">
+                <p class="font-medium text-white">${q.Concepto}</p>
+                ${badgeEstado}
+              </div>
+              <p class="text-xs text-slate-400 mt-0.5">${q.Fecha} | Medio: ${q.Medio_Pago}</p>
+            </div>
+            <span class="font-bold ${claseMonto}">${signo}${formatoCOP(monto)} COP</span>
+          </div>
+        `;
+      }).join('');
+
+      saldoPendiente = Math.max(0, saldoPendiente);
+      badgeSaldo.innerText = `Saldo por Cobrar: ${formatoCOP(saldoPendiente)} COP`;
+      badgeSaldo.className = saldoPendiente === 0
+        ? 'px-3 py-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold rounded-lg'
+        : 'px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold rounded-lg';
     }
 
     function renderizarCarteraCrespibank(cartera) {
@@ -503,7 +576,7 @@
       const badgeNov = document.getElementById('badge-nov');
 
       if (pendientes.length === 0) {
-        cont.innerHTML = '<div class="p-6 text-center border border-dashed border-slate-700 rounded-xl text-emerald-400 text-sm">✔ No hay movimientos pendientes en Google Sheets.</div>';
+        cont.innerHTML = '<div class="p-6 text-center border border-dashed border-slate-700 rounded-xl text-emerald-400 text-sm">✔ No hay movimientos pendientes por revisar en Google Sheets.</div>';
         badge.className = 'bg-emerald-500/20 text-emerald-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold';
         badge.innerText = '✔';
         badgeNov.innerText = '✔ OK';
@@ -519,6 +592,10 @@
         const etiquetaFlujo = esIngreso
           ? '<span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">↓ INGRESO DETECTADO</span>'
           : '<span class="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded font-bold">↑ PAGO / EGRESO</span>';
+
+        const sugerencia = (p.Categoria && p.Categoria !== 'Sin Sugerencia')
+          ? `<span class="text-[10px] bg-sky-500/20 text-sky-300 border border-sky-500/30 px-2 py-0.5 rounded font-semibold">💡 Sugerido: ${p.Categoria}</span>`
+          : '';
 
         const descEscapada = (p.Descripcion || '').replace(/'/g, "\\'");
 
@@ -539,10 +616,11 @@
         return `
           <div id="card-${p.ID}" class="tarjeta-movimiento bg-slate-800 border border-slate-700 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
             <div>
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
                 ${etiquetaFlujo}
                 <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono">${p.Banco}</span>
                 <span class="text-xs text-slate-400">${p.Fecha}</span>
+                ${sugerencia}
               </div>
               <p class="font-bold text-white text-base mt-1">${formatoCOP(p.Monto)} COP</p>
               <p class="text-xs text-slate-300">${p.Descripcion}</p>
@@ -553,6 +631,60 @@
           </div>
         `;
       }).join('');
+    }
+
+    // LÓGICA MODAL PUENTE QUIMINSA
+    function abrirModalQuiminsa(tipoMov) {
+      tipoQuiminsaEnCurso = tipoMov;
+      const titulo = document.getElementById('modal-quiminsa-titulo');
+      const lblConcepto = document.getElementById('lbl-quiminsa-concepto');
+      document.getElementById('input-quiminsa-concepto').value = '';
+      document.getElementById('input-quiminsa-monto').value = '';
+
+      if (tipoMov === 'Reintegro / Cruce') {
+        titulo.innerHTML = '<span>✔</span> Cruzar Desembolso / Reintegro Quiminsa';
+        lblConcepto.innerText = 'Detalle del reintegro o desembolso recibido';
+      } else {
+        titulo.innerHTML = '<span>🏢</span> Registrar Gasto Manual Puente Quiminsa';
+        lblConcepto.innerText = 'Concepto del gasto pagado por ti';
+      }
+
+      const modal = document.getElementById('modal-quiminsa');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarModalQuiminsa() {
+      const modal = document.getElementById('modal-quiminsa');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function confirmarGuardadoQuiminsa() {
+      const concepto = document.getElementById('input-quiminsa-concepto').value.trim();
+      const monto = parseFloat(document.getElementById('input-quiminsa-monto').value) || 0;
+      const medioPago = document.getElementById('select-quiminsa-medio').value;
+
+      if (!concepto || monto <= 0) {
+        alert('Por favor ingresa el concepto y un monto válido mayor a $0.');
+        return;
+      }
+
+      cerrarModalQuiminsa();
+
+      await fetch(API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accion: 'movimiento_quiminsa',
+          tipoMov: tipoQuiminsaEnCurso,
+          concepto: concepto,
+          monto: monto,
+          medioPago: medioPago
+        })
+      });
+      setTimeout(() => sincronizarNube(), 1300);
     }
 
     // LÓGICA DEL MODAL CRESPIBANK CON INTERÉS EN % EDITABLE
@@ -693,7 +825,7 @@
       const card = document.getElementById(`card-${id}`);
       if (card) {
         card.style.opacity = '0.4';
-        card.innerHTML = `<p class="text-xs text-emerald-400 font-semibold">⏳ Guardando "${categoria}" en Google Sheets y entrenando regla...</p>`;
+        card.innerHTML = `<p class="text-xs text-emerald-400 font-semibold">⏳ Guardando "${categoria}" como regla predeterminada...</p>`;
       }
 
       try {
@@ -835,7 +967,7 @@
 
     function descargarInforme() {
       const d = datosMeses[mesActual];
-      const contenido = `INFORME EJECUTIVO - CORTE ${d.titulo.toUpperCase()}\nEstado: ${d.estado}\n\n1. Gasto Real Confirmado (Incl. Hogar/Familia): ${formatoCOP(d.gastoNum)} COP\n2. Ingresos Interés Crespibank: ${formatoCOP(d.rendimientosNum)} COP\n3. Otros Ingresos / Abonos Capital: ${formatoCOP(d.otrosIngresosNum)} COP\n4. Saldo por Cobrar Quiminsa SAS: $673.354 COP`;
+      const contenido = `INFORME EJECUTIVO - CORTE ${d.titulo.toUpperCase()}\nEstado: ${d.estado}\n\n1. Gasto Real Confirmado (Incl. Hogar/Familia): ${formatoCOP(d.gastoNum)} COP\n2. Ingresos Interés Crespibank: ${formatoCOP(d.rendimientosNum)} COP\n3. Otros Ingresos / Abonos Capital: ${formatoCOP(d.otrosIngresosNum)} COP\n4. Revisión Quiminsa SAS: Sincronizada en pestaña Puente_Quiminsa`;
       const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
