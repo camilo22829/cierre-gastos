@@ -14,14 +14,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(regs => {
-      regs.forEach(r => r.unregister());
-    });
-  }
-</script>.catch(() => {});
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(r => r.unregister());
       });
     }
   </script>
@@ -124,7 +118,7 @@
       </div>
     </section>
 
-    <!-- VISTA 2: REVISIÓN Y CLASIFICACIÓN RÁPIDA (100% REVISIÓN OBLIGATORIA) -->
+    <!-- VISTA 2: REVISIÓN Y CLASIFICACIÓN RÁPIDA -->
     <section id="vista-decision" class="space-y-4 hidden">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
@@ -191,7 +185,7 @@
       </div>
     </section>
 
-    <!-- VISTA 4: PUENTE QUIMINSA (CON INGRESO MANUAL Y CRUCE POR OTRO MEDIO) -->
+    <!-- VISTA 4: PUENTE QUIMINSA -->
     <section id="vista-quiminsa" class="space-y-6 hidden">
       <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
@@ -281,7 +275,7 @@
     </div>
   </div>
 
-  <!-- MODAL 2: PUENTE QUIMINSA (GASTO MANUAL O CRUCE DE DESEMBOLSO EXTERNO) -->
+  <!-- MODAL 2: PUENTE QUIMINSA -->
   <div id="modal-quiminsa" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-800 border border-amber-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-700 pb-3">
@@ -321,7 +315,8 @@
   </div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxVR7v3lcvP8aNT57qYhSkjvzbSFWIfWOeXcBZS8aI44jslRGONk8o4obFu4E26hAHIRw/exec';
+    // Pega aquí tu URL /exec más reciente de Google Apps Script
+    const API_URL = 'https://script.google.com/macros/s/AKfycbx1X-D3CNyFchj8uhkxVTq4pU0SuWhZGuY5mfGgH8xFToQuohUK6gIA9HwSIgBFykuE6Q/exec';
 
     let mesActual = 'nov';
     let chartCatInstance = null;
@@ -421,38 +416,39 @@
       return '$' + Math.round(valor).toLocaleString('es-CO');
     }
 
-   async function sincronizarNube() {
-  const badgeNube = document.getElementById('status-nube');
-  badgeNube.innerHTML = '⏳ Conectando...';
-  badgeNube.className = 'text-[11px] bg-amber-500/20 border border-amber-500/40 text-amber-300 px-2.5 py-0.5 rounded-full';
+    async function sincronizarNube() {
+      const badgeNube = document.getElementById('status-nube');
+      badgeNube.innerHTML = '⏳ Conectando...';
+      badgeNube.className = 'text-[11px] bg-amber-500/20 border border-amber-500/40 text-amber-300 px-2.5 py-0.5 rounded-full';
 
-  try {
-    const res = await fetch(API_URL, {
-      method: 'GET',
-      redirect: 'follow',
-      cache: 'no-store'
-    });
-    const texto = await res.text();
-    let data;
-    try {
-      data = JSON.parse(texto);
-    } catch (e) {
-      badgeNube.innerHTML = '⚠️ Respuesta HTML (Permisos/URL)';
-      return;
+      try {
+        const res = await fetch(API_URL, {
+          method: 'GET',
+          redirect: 'follow',
+          cache: 'no-store'
+        });
+        const texto = await res.text();
+        let data;
+        try {
+          data = JSON.parse(texto);
+        } catch (e) {
+          badgeNube.innerHTML = '⚠️ Respuesta HTML (Permisos/URL)';
+          return;
+        }
+
+        if (data.status === 'ok') {
+          badgeNube.innerHTML = '🟢 Nube Conectada';
+          badgeNube.className = 'text-[11px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-0.5 rounded-full';
+          procesarDatosNube(data.movimientos || [], data.cartera || [], data.quiminsa || []);
+        } else {
+          badgeNube.innerHTML = '⚠️ Error: ' + (data.status || 'Desconocido');
+        }
+      } catch (err) {
+        badgeNube.innerHTML = '🔴 Bloqueo Red/Safari: ' + err.message;
+        badgeNube.className = 'text-[11px] bg-rose-500/20 border border-rose-500/40 text-rose-300 px-2.5 py-0.5 rounded-full';
+      }
     }
 
-    if (data.status === 'ok') {
-      badgeNube.innerHTML = '🟢 Nube Conectada';
-      badgeNube.className = 'text-[11px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-0.5 rounded-full';
-      procesarDatosNube(data.movimientos || [], data.cartera || [], data.quiminsa || []);
-    } else {
-      badgeNube.innerHTML = '⚠️ Error: ' + (data.status || 'Desconocido');
-    }
-  } catch (err) {
-    badgeNube.innerHTML = '🔴 Bloqueo Red/Safari: ' + err.message;
-    badgeNube.className = 'text-[11px] bg-rose-500/20 border border-rose-500/40 text-rose-300 px-2.5 py-0.5 rounded-full';
-  }
-}
     function procesarDatosNube(movimientos, cartera, quiminsa) {
       let extraGastoNov = 0;
       let extraHogarNov = 0;
@@ -464,18 +460,20 @@
 
       movimientos.forEach(m => {
         const monto = parseFloat(m.Monto) || 0;
-        const tipo = (m.Tipo || '').toString();
-        const cat = (m.Categoria || '').toString();
+        const tipo = String(m.Tipo || '');
+        const cat = String(m.Categoria || '');
+        const desc = String(m.Descripcion ?? 'Sin descripción');
+        const banco = String(m.Banco || '');
 
         if (tipo.startsWith('PENDIENTE')) {
           pendientes.push(m);
-        } else if (m.Mes === 'nov') {
+        } else if (String(m.Mes || '') === 'nov') {
           if (tipo === 'Gasto Real') {
             extraGastoNov += monto;
             if (cat === 'Hogar / Familia') extraHogarNov += monto;
             const etiquetaCat = cat === 'Hogar / Familia' ? 'Hogar / Familia — ' : '';
             nuevosComerciosNov.push({
-              nombre: `${etiquetaCat}${m.Descripcion} (${m.Banco})`,
+              nombre: `${etiquetaCat}${desc} (${banco})`,
               monto: `${formatoCOP(monto)} COP`
             });
           } else if (tipo === 'Crespibank_Interes') {
@@ -518,7 +516,7 @@
       let saldoPendiente = 0;
       lista.innerHTML = quiminsa.slice().reverse().map(q => {
         const monto = parseFloat(q.Monto) || 0;
-        const esCruce = q.Tipo_Mov === 'Reintegro / Cruce';
+        const esCruce = String(q.Tipo_Mov || '') === 'Reintegro / Cruce';
         if (esCruce) {
           saldoPendiente -= monto;
         } else {
@@ -535,10 +533,10 @@
           <div class="bg-slate-900/60 p-3.5 rounded-lg border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-sm">
             <div>
               <div class="flex items-center gap-2">
-                <p class="font-medium text-white">${q.Concepto}</p>
+                <p class="font-medium text-white">${String(q.Concepto || '')}</p>
                 ${badgeEstado}
               </div>
-              <p class="text-xs text-slate-400 mt-0.5">${q.Fecha} | Medio: ${q.Medio_Pago}</p>
+              <p class="text-xs text-slate-400 mt-0.5">${String(q.Fecha || '')} | Medio: ${String(q.Medio_Pago || '')}</p>
             </div>
             <span class="font-bold ${claseMonto}">${signo}${formatoCOP(monto)} COP</span>
           </div>
@@ -564,19 +562,20 @@
         const capInicial = parseFloat(c.Capital_Inicial) || 0;
         const intMensual = parseFloat(c.Interes_Mensual) || 0;
         const saldo = parseFloat(c.Saldo_Capital) || 0;
-        if (c.Estado === 'Activo') totalActivo += saldo;
+        const estado = String(c.Estado || '');
+        if (estado === 'Activo') totalActivo += saldo;
 
         const pctCalculado = capInicial > 0 && intMensual > 0 ? ((intMensual / capInicial) * 100).toFixed(1).replace(/\.0$/, '') + '%' : '';
         const textoInteres = intMensual > 0 ? `${formatoCOP(intMensual)}/mes (${pctCalculado})` : '-';
 
-        const badgeEstado = c.Estado === 'Activo'
-          ? `<span class="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">Activo (${c.Fecha_Desembolso})</span>`
-          : `<span class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded">${c.Estado}</span>`;
+        const badgeEstado = estado === 'Activo'
+          ? `<span class="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">Activo (${String(c.Fecha_Desembolso || '')})</span>`
+          : `<span class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded">${estado}</span>`;
 
         return `
           <tr>
-            <td class="p-3 font-mono text-xs text-purple-400">${c.ID_Prestamo}</td>
-            <td class="p-3 font-medium text-white">${c.Cliente}</td>
+            <td class="p-3 font-mono text-xs text-purple-400">${String(c.ID_Prestamo || '')}</td>
+            <td class="p-3 font-medium text-white">${String(c.Cliente || '')}</td>
             <td class="p-3">${formatoCOP(capInicial)}</td>
             <td class="p-3 text-emerald-400 font-semibold">${textoInteres}</td>
             <td class="p-3 font-bold ${saldo > 0 ? 'text-white' : 'text-emerald-400'}">${formatoCOP(saldo)}</td>
@@ -606,42 +605,46 @@
       badgeNov.innerText = `⚠️ ${pendientes.length}`;
 
       cont.innerHTML = pendientes.map(p => {
-        const esIngreso = p.Flujo === 'Ingreso' || p.Tipo === 'PENDIENTE_INGRESO';
+        const esIngreso = String(p.Flujo || '') === 'Ingreso' || String(p.Tipo || '') === 'PENDIENTE_INGRESO';
         const etiquetaFlujo = esIngreso
           ? '<span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">↓ INGRESO DETECTADO</span>'
           : '<span class="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded font-bold">↑ PAGO / EGRESO</span>';
 
-        const sugerencia = (p.Categoria && p.Categoria !== 'Sin Sugerencia')
-          ? `<span class="text-[10px] bg-sky-500/20 text-sky-300 border border-sky-500/30 px-2 py-0.5 rounded font-semibold">💡 Sugerido: ${p.Categoria}</span>`
+        const catStr = String(p.Categoria || '');
+        const sugerencia = (catStr && catStr !== 'Sin Sugerencia')
+          ? `<span class="text-[10px] bg-sky-500/20 text-sky-300 border border-sky-500/30 px-2 py-0.5 rounded font-semibold">💡 Sugerido: ${catStr}</span>`
           : '';
 
-        const descEscapada = (p.Descripcion || '').replace(/'/g, "\\'");
+        const descTexto = String(p.Descripcion ?? 'Sin descripción');
+        const descEscapada = descTexto.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const idStr = String(p.ID || '');
+        const montoNum = parseFloat(p.Monto) || 0;
 
         const botones = esIngreso
           ? `
-            <button onclick="abrirModalCrespibank('${p.ID}', 'Crespibank_Interes', 'Rendimientos', '${descEscapada}', ${p.Monto})" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💰 Interés Crespibank</button>
-            <button onclick="abrirModalCrespibank('${p.ID}', 'Crespibank_Capital', 'Abono Capital', '${descEscapada}', ${p.Monto})" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">💵 Abono Capital</button>
-            <button onclick="clasificarEnNube('${p.ID}', 'Reintegro Quiminsa', 'Corporativo', '${descEscapada}')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Reintegro Quiminsa</button>
-            <button onclick="clasificarEnNube('${p.ID}', 'Otro_Ingreso', 'Otros Ingresos', '${descEscapada}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">📥 Otro Ingreso</button>
+            <button onclick="abrirModalCrespibank('${idStr}', 'Crespibank_Interes', 'Rendimientos', '${descEscapada}', ${montoNum})" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💰 Interés Crespibank</button>
+            <button onclick="abrirModalCrespibank('${idStr}', 'Crespibank_Capital', 'Abono Capital', '${descEscapada}', ${montoNum})" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">💵 Abono Capital</button>
+            <button onclick="clasificarEnNube('${idStr}', 'Reintegro Quiminsa', 'Corporativo', '${descEscapada}')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Reintegro Quiminsa</button>
+            <button onclick="clasificarEnNube('${idStr}', 'Otro_Ingreso', 'Otros Ingresos', '${descEscapada}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">📥 Otro Ingreso</button>
           `
           : `
-            <button onclick="clasificarEnNube('${p.ID}', 'Gasto Real', 'Hogar / Familia', '${descEscapada}')" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">🏠 Hogar / Familia</button>
-            <button onclick="clasificarEnNube('${p.ID}', 'Gasto Real', 'Gasto Personal', '${descEscapada}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">🛒 Gasto Personal</button>
-            <button onclick="abrirModalCrespibank('${p.ID}', 'Crespibank_Desembolso', 'Préstamo Nuevo', '${descEscapada}', ${p.Monto})" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💼 Crespibank (Nuevo Crédito)</button>
-            <button onclick="clasificarEnNube('${p.ID}', 'Puente Quiminsa', 'Corporativo', '${descEscapada}')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Puente Quiminsa</button>
+            <button onclick="clasificarEnNube('${idStr}', 'Gasto Real', 'Hogar / Familia', '${descEscapada}')" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">🏠 Hogar / Familia</button>
+            <button onclick="clasificarEnNube('${idStr}', 'Gasto Real', 'Gasto Personal', '${descEscapada}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">🛒 Gasto Personal</button>
+            <button onclick="abrirModalCrespibank('${idStr}', 'Crespibank_Desembolso', 'Préstamo Nuevo', '${descEscapada}', ${montoNum})" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💼 Crespibank (Nuevo Crédito)</button>
+            <button onclick="clasificarEnNube('${idStr}', 'Puente Quiminsa', 'Corporativo', '${descEscapada}')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Puente Quiminsa</button>
           `;
 
         return `
-          <div id="card-${p.ID}" class="tarjeta-movimiento bg-slate-800 border border-slate-700 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div id="card-${idStr}" class="tarjeta-movimiento bg-slate-800 border border-slate-700 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
             <div>
               <div class="flex flex-wrap items-center gap-2">
                 ${etiquetaFlujo}
-                <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono">${p.Banco}</span>
-                <span class="text-xs text-slate-400">${p.Fecha}</span>
+                <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono">${String(p.Banco || '')}</span>
+                <span class="text-xs text-slate-400">${String(p.Fecha || '')}</span>
                 ${sugerencia}
               </div>
-              <p class="font-bold text-white text-base mt-1">${formatoCOP(p.Monto)} COP</p>
-              <p class="text-xs text-slate-300">${p.Descripcion}</p>
+              <p class="font-bold text-white text-base mt-1">${formatoCOP(montoNum)} COP</p>
+              <p class="text-xs text-slate-300">${descTexto}</p>
             </div>
             <div class="flex flex-wrap gap-1.5">
               ${botones}
@@ -651,7 +654,6 @@
       }).join('');
     }
 
-    // LÓGICA MODAL PUENTE QUIMINSA
     function abrirModalQuiminsa(tipoMov) {
       tipoQuiminsaEnCurso = tipoMov;
       const titulo = document.getElementById('modal-quiminsa-titulo');
@@ -705,7 +707,6 @@
       setTimeout(() => sincronizarNube(), 1300);
     }
 
-    // LÓGICA DEL MODAL CRESPIBANK CON INTERÉS EN % EDITABLE
     function abrirModalCrespibank(id, tipo, categoria, descripcion, monto) {
       txCrespibankEnCurso = { id, tipo, categoria, descripcion, modoDirecto: false };
       document.getElementById('modal-crespibank-ref').classList.remove('hidden');
