@@ -248,11 +248,6 @@
           <label class="block text-xs font-semibold text-slate-300 mb-1">Persona asignada</label>
           <select id="select-cliente-crespibank" onchange="alCambiarClienteModal()" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-purple-400 outline-none">
             <option value="José Cananias">José Cananias</option>
-            <option value="Camilo Cárdenas">Camilo Cárdenas</option>
-            <option value="Óscar Hernández">Óscar Hernández</option>
-            <option value="Gerson Delgadillo">Gerson Delgadillo</option>
-            <option value="Wilmer">Wilmer</option>
-            <option value="Yorlady">Yorlady</option>
             <option value="NUEVO">+ Agregar nueva persona...</option>
           </select>
           <input type="text" id="input-nuevo-cliente" placeholder="Nombre completo de la persona" class="hidden mt-2 w-full bg-slate-900 border border-purple-500/50 rounded-lg p-2.5 text-sm text-white outline-none">
@@ -339,7 +334,7 @@
   </div>
 
   <script>
-    // Pega aquí tu URL /exec activa de Google Apps Script
+    // Reemplaza aquí si llegas a cambiar tu URL /exec de Google Apps Script
     const API_URL = 'https://script.google.com/macros/s/AKfycbx1X-D3CNyFchj8uhkxVTq4pU0SuWhZGuY5mfGgH8xFToQuohUK6gIA9HwSIgBFykuE6Q/exec';
 
     let mesActual = 'nov';
@@ -578,11 +573,18 @@
         : 'px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold rounded-lg';
     }
 
-    // SEMÁFORO DE CUMPLIMIENTO DE INTERESES DEL MES EN CURSO
     function renderizarCarteraCrespibank(cartera, movimientos) {
       const tbody = document.getElementById('tabla-cartera-crespibank');
       const mesesCodigo = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
       const mesVigente = mesesCodigo[new Date().getMonth()];
+
+      // Cargar dinámicamente todos los clientes de Cartera_Crespibank en el modal
+      const selectCliente = document.getElementById('select-cliente-crespibank');
+      if (selectCliente && cartera && cartera.length > 0) {
+        const nombresUnicos = [...new Set(cartera.map(c => String(c.Cliente || '').trim()).filter(Boolean))];
+        selectCliente.innerHTML = nombresUnicos.map(nombre => `<option value="${nombre}">${nombre}</option>`).join('')
+          + '<option value="NUEVO">+ Agregar nueva persona...</option>';
+      }
 
       if (!cartera || cartera.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400 text-xs">No hay créditos registrados en Cartera_Crespibank.</td></tr>';
@@ -608,7 +610,6 @@
           ? `<span class="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">Activo (${String(c.Fecha_Desembolso || '')})</span>`
           : `<span class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded">${estado}</span>`;
 
-        // Validar si pagó intereses durante el mes vigente
         let badgeCumplimiento = '<span class="text-xs text-slate-500">-</span>';
         if (estado === 'Activo' && intMensual > 0) {
           const primerNombre = cliente.toLowerCase().split(' ')[0];
@@ -641,7 +642,6 @@
 
       document.getElementById('crespibank-cartera-activa').innerHTML = `${formatoCOP(totalActivo)} <span class="text-xs font-normal text-slate-400">COP</span>`;
 
-      // Actualizar tarjeta de control de cobros y badge de pestaña
       const cajaControl = document.getElementById('caja-control-mes-crespibank');
       const txtEstadoCobros = document.getElementById('crespibank-estado-cobros');
       const subCobros = document.getElementById('crespibank-sub-cobros');
@@ -784,13 +784,24 @@
       setTimeout(() => sincronizarNube(), 1300);
     }
 
-    // LÓGICA MODAL CRESPIBANK (NUEVO CRÉDITO, SOLO INTERÉS, SOLO CAPITAL, O MIXTO INTERÉS + CAPITAL)
     function abrirModalCrespibank(id, tipo, categoria, descripcion, monto) {
       txCrespibankEnCurso = { id, tipo, categoria, descripcion, modoDirecto: false };
       document.getElementById('modal-crespibank-ref').classList.remove('hidden');
       document.getElementById('modal-crespibank-desc').innerText = descripcion;
       document.getElementById('input-valor-credito').value = monto || 0;
       document.getElementById('input-tasa-porcentaje').value = 2;
+
+      // Preseleccionar automáticamente el cliente si su nombre aparece en la descripción
+      const selectCli = document.getElementById('select-cliente-crespibank');
+      const descMin = descripcion.toLowerCase();
+      for (let i = 0; i < selectCli.options.length; i++) {
+        const optVal = selectCli.options[i].value;
+        if (optVal !== 'NUEVO' && descMin.includes(optVal.toLowerCase().split(' ')[0])) {
+          selectCli.selectedIndex = i;
+          break;
+        }
+      }
+      toggleInputNuevoCliente();
 
       const titulo = document.getElementById('modal-crespibank-titulo');
       const lblValor = document.getElementById('lbl-valor-credito');
@@ -994,11 +1005,14 @@
     }
 
     async function registrarMovimientoManual() {
-      const comercio = prompt('Nombre del comercio, cliente o concepto:');
+      const comercio = prompt('Nombre del cliente, comercio o concepto (ej: Tania):');
       if (!comercio) return;
-      const montoStr = prompt('Monto en COP (solo números, ej: 45000):');
-      const monto = parseFloat(montoStr);
-      if (!monto) return;
+      const montoStr = prompt('Monto en COP (solo números, ej: 46000):');
+      const monto = parseFloat((montoStr || '').replace(/[.,\s$]/g, ''));
+      if (!monto || monto <= 0) {
+        alert('Ingresa un monto numérico válido.');
+        return;
+      }
       const esIng = confirm('¿Este movimiento es un INGRESO (dinero que recibiste)?\n\nAceptar = Ingreso\nCancelar = Pago / Gasto');
 
       await fetch(API_URL, {
@@ -1007,11 +1021,18 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           accion: 'nuevo_correo',
-          asunto: esIng ? 'Recibiste transferencia' : 'Compra manual',
+          origen: 'Manual',
+          flujoManual: esIng ? 'Ingreso' : 'Egreso',
+          descripcionManual: comercio.trim(),
+          montoManual: monto,
+          asunto: esIng ? 'BANCOLOMBIA Recibiste transferencia' : 'BANCOLOMBIA Compra manual',
           cuerpo: `${esIng ? 'Recibiste' : 'Compra'} en ${comercio} por $${monto}`
         })
       });
-      setTimeout(() => sincronizarNube(), 1200);
+      setTimeout(() => {
+        sincronizarNube();
+        cambiarPestana('decision');
+      }, 1300);
     }
 
     function cambiarPestana(pestana) {
