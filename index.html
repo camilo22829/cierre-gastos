@@ -68,8 +68,9 @@
         <span>Revisión & Clasificación</span>
         <span id="contador-decisiones" class="bg-emerald-500/20 text-emerald-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold">✔</span>
       </button>
-      <button onclick="cambiarPestana('crespibank')" id="tab-crespibank" class="px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-400 transition flex items-center gap-1">
-        <span>★</span> Crespibank
+      <button onclick="cambiarPestana('crespibank')" id="tab-crespibank" class="px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-400 transition flex items-center gap-1.5">
+        <span>★ Crespibank</span>
+        <span id="badge-alerta-crespibank" class="hidden bg-amber-500/20 text-amber-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">!</span>
       </button>
       <button onclick="cambiarPestana('quiminsa')" id="tab-quiminsa" class="px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-400 transition">
         🏢 Puente Quiminsa
@@ -123,7 +124,7 @@
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h3 class="text-base font-semibold text-slate-200">Bandeja de Revisión Obligatoria (Ingresos y Egresos)</h3>
-          <p class="text-xs text-slate-400">Todo movimiento detectado pasa por tu validación aquí y guarda la sugerencia predeterminada para futuras alertas.</p>
+          <p class="text-xs text-slate-400">Si un cliente paga más de su cuota de interés, usa "Interés + Capital" para dividir y abonar el excedente automáticamente.</p>
         </div>
         <button onclick="registrarMovimientoManual()" class="text-xs bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-medium transition">
           + Registrar Movimiento Rápido
@@ -139,29 +140,34 @@
 
     <!-- VISTA 3: CRESPIBANK -->
     <section id="vista-crespibank" class="space-y-6 hidden">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-slate-800/60 border border-purple-500/30 p-5 rounded-xl">
           <p class="text-xs text-purple-300">Cartera Activa Colocada</p>
           <p class="text-2xl font-bold text-white mt-1" id="crespibank-cartera-activa">$1.500.000 <span class="text-xs font-normal text-slate-400">COP</span></p>
-          <p class="text-xs text-slate-400 mt-2">Capital vivo en calle (sincronizado)</p>
+          <p class="text-xs text-slate-400 mt-2">Capital vivo en calle</p>
         </div>
         <div class="bg-slate-800/60 border border-emerald-500/30 p-5 rounded-xl">
-          <p class="text-xs text-emerald-300">Intereses Efectivos Cobrados</p>
+          <p class="text-xs text-emerald-300">Intereses Cobrados (Mes)</p>
           <p class="text-2xl font-bold text-emerald-400 mt-1" id="crespibank-interes-total">$332.334 <span class="text-xs font-normal text-slate-400">COP</span></p>
-          <p class="text-xs text-slate-400 mt-2">Óscar ($100k) + Yorlady ($232.334)</p>
+          <p class="text-xs text-slate-400 mt-2">Rendimientos efectivos del mes</p>
         </div>
         <div class="bg-slate-800/60 border border-sky-500/30 p-5 rounded-xl">
-          <p class="text-xs text-sky-300">Capital Recuperado / Otros Ingresos</p>
+          <p class="text-xs text-sky-300">Capital Recuperado (Mes)</p>
           <p class="text-2xl font-bold text-white mt-1" id="crespibank-capital-total">$840.000 <span class="text-xs font-normal text-slate-400">COP</span></p>
-          <p class="text-xs text-emerald-400 mt-2">Abonos a capital recibidos en el mes</p>
+          <p class="text-xs text-emerald-400 mt-2">Abonos a capital recibidos</p>
+        </div>
+        <div id="caja-control-mes-crespibank" class="bg-slate-800/60 border border-amber-500/30 p-5 rounded-xl">
+          <p class="text-xs text-amber-300 font-semibold uppercase">Control de Cobro Mensual</p>
+          <p class="text-lg font-bold text-amber-400 mt-1" id="crespibank-estado-cobros">Validando...</p>
+          <p class="text-xs text-slate-300 mt-1" id="crespibank-sub-cobros">Cruce automático de intereses del mes</p>
         </div>
       </div>
 
       <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
           <div>
-            <h3 class="text-sm font-semibold text-slate-200">Libreta Operativa Crespibank (En Vivo)</h3>
-            <p class="text-xs text-slate-400">Sincronizada con la pestaña Cartera_Crespibank</p>
+            <h3 class="text-sm font-semibold text-slate-200">Libreta Operativa Crespibank (Semáforo Mensual)</h3>
+            <p class="text-xs text-slate-400">Valida automáticamente si cada cliente activo ya pagó sus intereses en el mes actual.</p>
           </div>
           <button onclick="abrirModalCrearCreditoDirecto()" class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow transition">
             + Crear Nuevo Crédito
@@ -174,9 +180,10 @@
                 <th class="p-3">ID</th>
                 <th class="p-3">Deudor</th>
                 <th class="p-3">Deuda Inicial</th>
-                <th class="p-3">Interés Mensual</th>
+                <th class="p-3">Cuota Interés</th>
                 <th class="p-3">Saldo Capital</th>
                 <th class="p-3">Estado</th>
+                <th class="p-3">Cumplimiento Mes</th>
               </tr>
             </thead>
             <tbody id="tabla-cartera-crespibank" class="divide-y divide-slate-700/50"></tbody>
@@ -222,7 +229,7 @@
 
   </div>
 
-  <!-- MODAL 1: CREACIÓN / ASIGNACIÓN DE CRÉDITO CRESPIBANK -->
+  <!-- MODAL 1: CREACIÓN / ASIGNACIÓN / PAGO MIXTO CRESPIBANK -->
   <div id="modal-crespibank" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-800 border border-purple-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-700 pb-3">
@@ -238,8 +245,8 @@
 
       <div class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Persona a la cual se le asignó el crédito</label>
-          <select id="select-cliente-crespibank" onchange="toggleInputNuevoCliente()" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-purple-400 outline-none">
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Persona asignada</label>
+          <select id="select-cliente-crespibank" onchange="alCambiarClienteModal()" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-purple-400 outline-none">
             <option value="José Cananias">José Cananias</option>
             <option value="Camilo Cárdenas">Camilo Cárdenas</option>
             <option value="Óscar Hernández">Óscar Hernández</option>
@@ -252,10 +259,11 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-valor-credito">Valor del crédito (COP)</label>
-          <input type="number" id="input-valor-credito" oninput="recalcularInteresPorcentaje()" placeholder="Ej: 1500000" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-sm font-bold text-white focus:border-purple-400 outline-none">
+          <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-valor-credito">Valor total (COP)</label>
+          <input type="number" id="input-valor-credito" oninput="recalcularCamposModalCrespibank()" placeholder="Ej: 1500000" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-sm font-bold text-white focus:border-purple-400 outline-none">
         </div>
 
+        <!-- Bloque Tasa % para Nuevo Crédito -->
         <div id="bloque-interes-crespibank">
           <div class="flex justify-between items-center mb-1">
             <label class="block text-xs font-semibold text-slate-300">Tasa de interés mensual (%)</label>
@@ -266,11 +274,27 @@
             <span class="absolute right-3.5 text-sm font-extrabold text-emerald-400 pointer-events-none">%</span>
           </div>
         </div>
+
+        <!-- Bloque Desglose Mixto (Interés + Abono Capital) -->
+        <div id="bloque-mixto-crespibank" class="hidden bg-slate-900/80 border border-indigo-500/40 p-3.5 rounded-xl space-y-2.5">
+          <p class="text-[11px] text-indigo-300 font-semibold">Distribución automática del pago recibido:</p>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[11px] text-emerald-300 font-semibold mb-1">1. A Intereses (COP)</label>
+              <input type="number" id="input-mixto-interes" oninput="recalcularMixtoDesdeInteres()" class="w-full bg-slate-800 border border-emerald-500/40 rounded-lg p-2 text-sm font-bold text-emerald-400 outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] text-sky-300 font-semibold mb-1">2. Abono Capital (COP)</label>
+              <input type="number" id="input-mixto-capital" readonly class="w-full bg-slate-950 border border-sky-500/40 rounded-lg p-2 text-sm font-bold text-sky-400 outline-none">
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-400" id="nota-mixto-cuota">Cuota sugerida según libreta: $0 COP</p>
+        </div>
       </div>
 
       <div class="flex justify-end gap-2 pt-2">
         <button onclick="cerrarModalCrespibank()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-xs font-semibold text-slate-200 rounded-lg transition">Cancelar</button>
-        <button onclick="confirmarGuardadoCrespibank()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white rounded-lg shadow transition">✔ Guardar Crédito</button>
+        <button onclick="confirmarGuardadoCrespibank()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white rounded-lg shadow transition">✔ Confirmar y Aplicar</button>
       </div>
     </div>
   </div>
@@ -315,14 +339,16 @@
   </div>
 
   <script>
-    // Pega aquí tu URL /exec más reciente de Google Apps Script
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxVR7v3lcvP8aNT57qYhSkjvzbSFWIfWOeXcBZS8aI44jslRGONk8o4obFu4E26hAHIRw/exec';
+    // Pega aquí tu URL /exec activa de Google Apps Script
+    const API_URL = 'https://script.google.com/macros/s/AKfycbx1X-D3CNyFchj8uhkxVTq4pU0SuWhZGuY5mfGgH8xFToQuohUK6gIA9HwSIgBFykuE6Q/exec';
 
     let mesActual = 'nov';
     let chartCatInstance = null;
     let chartHistInstance = null;
     let txCrespibankEnCurso = null;
     let tipoQuiminsaEnCurso = 'Gasto Puente';
+    let carteraGlobal = [];
+    let movimientosGlobal = [];
 
     const datosMeses = {
       ago: {
@@ -439,7 +465,9 @@
         if (data.status === 'ok') {
           badgeNube.innerHTML = '🟢 Nube Conectada';
           badgeNube.className = 'text-[11px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-0.5 rounded-full';
-          procesarDatosNube(data.movimientos || [], data.cartera || [], data.quiminsa || []);
+          movimientosGlobal = data.movimientos || [];
+          carteraGlobal = data.cartera || [];
+          procesarDatosNube(movimientosGlobal, carteraGlobal, data.quiminsa || []);
         } else {
           badgeNube.innerHTML = '⚠️ Error: ' + (data.status || 'Desconocido');
         }
@@ -497,7 +525,7 @@
       document.getElementById('crespibank-interes-total').innerHTML = `${formatoCOP(datosMeses.nov.rendimientosNum)} <span class="text-xs font-normal text-slate-400">COP</span>`;
       document.getElementById('crespibank-capital-total').innerHTML = `${formatoCOP(datosMeses.nov.otrosIngresosNum)} <span class="text-xs font-normal text-slate-400">COP</span>`;
 
-      renderizarCarteraCrespibank(cartera);
+      renderizarCarteraCrespibank(cartera, movimientos);
       renderizarPuenteQuiminsa(quiminsa);
       renderizarBandejaPendientes(pendientes);
       actualizarVistaMes(mesActual);
@@ -550,19 +578,27 @@
         : 'px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold rounded-lg';
     }
 
-    function renderizarCarteraCrespibank(cartera) {
+    // SEMÁFORO DE CUMPLIMIENTO DE INTERESES DEL MES EN CURSO
+    function renderizarCarteraCrespibank(cartera, movimientos) {
       const tbody = document.getElementById('tabla-cartera-crespibank');
+      const mesesCodigo = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      const mesVigente = mesesCodigo[new Date().getMonth()];
+
       if (!cartera || cartera.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 text-xs">Ejecuta inicializarCarteraCrespibank() en Apps Script o crea un crédito arriba.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400 text-xs">No hay créditos registrados en Cartera_Crespibank.</td></tr>';
         return;
       }
 
       let totalActivo = 0;
+      let activosAlDia = 0;
+      let activosEnAlerta = 0;
+
       tbody.innerHTML = cartera.map(c => {
         const capInicial = parseFloat(c.Capital_Inicial) || 0;
         const intMensual = parseFloat(c.Interes_Mensual) || 0;
         const saldo = parseFloat(c.Saldo_Capital) || 0;
         const estado = String(c.Estado || '');
+        const cliente = String(c.Cliente || '');
         if (estado === 'Activo') totalActivo += saldo;
 
         const pctCalculado = capInicial > 0 && intMensual > 0 ? ((intMensual / capInicial) * 100).toFixed(1).replace(/\.0$/, '') + '%' : '';
@@ -572,19 +608,59 @@
           ? `<span class="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">Activo (${String(c.Fecha_Desembolso || '')})</span>`
           : `<span class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded">${estado}</span>`;
 
+        // Validar si pagó intereses durante el mes vigente
+        let badgeCumplimiento = '<span class="text-xs text-slate-500">-</span>';
+        if (estado === 'Activo' && intMensual > 0) {
+          const primerNombre = cliente.toLowerCase().split(' ')[0];
+          const pagoEsteMes = movimientos
+            .filter(m => String(m.Mes || '') === mesVigente && String(m.Tipo || '') === 'Crespibank_Interes' && String(m.Descripcion || '').toLowerCase().includes(primerNombre))
+            .reduce((acc, m) => acc + (parseFloat(m.Monto) || 0), 0);
+
+          if (pagoEsteMes >= intMensual) {
+            activosAlDia++;
+            badgeCumplimiento = `<span class="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2.5 py-0.5 rounded-full font-bold">✔ Al día (${mesVigente.toUpperCase()})</span>`;
+          } else {
+            activosEnAlerta++;
+            const faltante = intMensual - pagoEsteMes;
+            badgeCumplimiento = `<span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-full font-bold">⚠️ Pendiente (${formatoCOP(faltante)})</span>`;
+          }
+        }
+
         return `
           <tr>
             <td class="p-3 font-mono text-xs text-purple-400">${String(c.ID_Prestamo || '')}</td>
-            <td class="p-3 font-medium text-white">${String(c.Cliente || '')}</td>
+            <td class="p-3 font-medium text-white">${cliente}</td>
             <td class="p-3">${formatoCOP(capInicial)}</td>
             <td class="p-3 text-emerald-400 font-semibold">${textoInteres}</td>
             <td class="p-3 font-bold ${saldo > 0 ? 'text-white' : 'text-emerald-400'}">${formatoCOP(saldo)}</td>
             <td class="p-3">${badgeEstado}</td>
+            <td class="p-3">${badgeCumplimiento}</td>
           </tr>
         `;
       }).join('');
 
       document.getElementById('crespibank-cartera-activa').innerHTML = `${formatoCOP(totalActivo)} <span class="text-xs font-normal text-slate-400">COP</span>`;
+
+      // Actualizar tarjeta de control de cobros y badge de pestaña
+      const cajaControl = document.getElementById('caja-control-mes-crespibank');
+      const txtEstadoCobros = document.getElementById('crespibank-estado-cobros');
+      const subCobros = document.getElementById('crespibank-sub-cobros');
+      const badgePestana = document.getElementById('badge-alerta-crespibank');
+
+      if (activosEnAlerta > 0) {
+        cajaControl.className = 'bg-amber-950/30 border border-amber-500/50 p-5 rounded-xl';
+        txtEstadoCobros.className = 'text-lg font-bold text-amber-400 mt-1';
+        txtEstadoCobros.innerText = `⚠️ ${activosEnAlerta} Pendiente(s) (${mesVigente.toUpperCase()})`;
+        subCobros.innerText = `${activosAlDia} al día | Faltan intereses del mes`;
+        badgePestana.classList.remove('hidden');
+        badgePestana.innerText = `⚠️ ${activosEnAlerta}`;
+      } else {
+        cajaControl.className = 'bg-emerald-950/30 border border-emerald-500/40 p-5 rounded-xl';
+        txtEstadoCobros.className = 'text-lg font-bold text-emerald-400 mt-1';
+        txtEstadoCobros.innerText = `✔ Cartera 100% Al Día`;
+        subCobros.innerText = `Todos los intereses de ${mesVigente.toUpperCase()} cobrados`;
+        badgePestana.classList.add('hidden');
+      }
     }
 
     function renderizarBandejaPendientes(pendientes) {
@@ -622,8 +698,9 @@
 
         const botones = esIngreso
           ? `
-            <button onclick="abrirModalCrespibank('${idStr}', 'Crespibank_Interes', 'Rendimientos', '${descEscapada}', ${montoNum})" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💰 Interés Crespibank</button>
-            <button onclick="abrirModalCrespibank('${idStr}', 'Crespibank_Capital', 'Abono Capital', '${descEscapada}', ${montoNum})" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">💵 Abono Capital</button>
+            <button onclick="abrirModalCrespibank('${idStr}', 'Crespibank_Interes', 'Rendimientos', '${descEscapada}', ${montoNum})" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white rounded-lg transition">💰 Solo Interés</button>
+            <button onclick="abrirModalCrespibank('${idStr}', 'Crespibank_Mixto', 'Interés + Capital', '${descEscapada}', ${montoNum})" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white rounded-lg shadow transition">💎 Interés + Capital</button>
+            <button onclick="abrirModalCrespibank('${idStr}', 'Crespibank_Capital', 'Abono Capital', '${descEscapada}', ${montoNum})" class="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-xs font-semibold text-white rounded-lg transition">💵 Solo Capital</button>
             <button onclick="clasificarEnNube('${idStr}', 'Reintegro Quiminsa', 'Corporativo', '${descEscapada}')" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-xs font-semibold text-white rounded-lg transition">🏢 Reintegro Quiminsa</button>
             <button onclick="clasificarEnNube('${idStr}', 'Otro_Ingreso', 'Otros Ingresos', '${descEscapada}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white rounded-lg transition">📥 Otro Ingreso</button>
           `
@@ -707,30 +784,38 @@
       setTimeout(() => sincronizarNube(), 1300);
     }
 
+    // LÓGICA MODAL CRESPIBANK (NUEVO CRÉDITO, SOLO INTERÉS, SOLO CAPITAL, O MIXTO INTERÉS + CAPITAL)
     function abrirModalCrespibank(id, tipo, categoria, descripcion, monto) {
       txCrespibankEnCurso = { id, tipo, categoria, descripcion, modoDirecto: false };
       document.getElementById('modal-crespibank-ref').classList.remove('hidden');
       document.getElementById('modal-crespibank-desc').innerText = descripcion;
       document.getElementById('input-valor-credito').value = monto || 0;
       document.getElementById('input-tasa-porcentaje').value = 2;
-      recalcularInteresPorcentaje();
 
       const titulo = document.getElementById('modal-crespibank-titulo');
       const lblValor = document.getElementById('lbl-valor-credito');
       const bloqueInteres = document.getElementById('bloque-interes-crespibank');
+      const bloqueMixto = document.getElementById('bloque-mixto-crespibank');
+
+      bloqueInteres.classList.add('hidden');
+      bloqueMixto.classList.add('hidden');
 
       if (tipo === 'Crespibank_Desembolso') {
         titulo.innerHTML = '<span>💼</span> Crear Nuevo Crédito Crespibank';
         lblValor.innerText = 'Valor del crédito asignado (COP)';
         bloqueInteres.classList.remove('hidden');
+        recalcularInteresPorcentaje();
+      } else if (tipo === 'Crespibank_Mixto') {
+        titulo.innerHTML = '<span>💎</span> Pago Mixto: Interés + Abono Capital';
+        lblValor.innerText = 'Valor total recibido (COP)';
+        bloqueMixto.classList.remove('hidden');
+        autocompletarCuotaClienteMixto();
       } else if (tipo === 'Crespibank_Capital') {
         titulo.innerHTML = '<span>💵</span> Registrar Abono a Capital';
         lblValor.innerText = 'Valor abonado a capital (COP)';
-        bloqueInteres.classList.add('hidden');
       } else {
         titulo.innerHTML = '<span>💰</span> Registrar Pago de Intereses';
         lblValor.innerText = 'Valor de intereses recibidos (COP)';
-        bloqueInteres.classList.add('hidden');
       }
 
       const modal = document.getElementById('modal-crespibank');
@@ -747,10 +832,47 @@
       document.getElementById('input-tasa-porcentaje').value = 2;
       recalcularInteresPorcentaje();
       document.getElementById('bloque-interes-crespibank').classList.remove('hidden');
+      document.getElementById('bloque-mixto-crespibank').classList.add('hidden');
 
       const modal = document.getElementById('modal-crespibank');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
+    }
+
+    function alCambiarClienteModal() {
+      toggleInputNuevoCliente();
+      if (txCrespibankEnCurso && txCrespibankEnCurso.tipo === 'Crespibank_Mixto') {
+        autocompletarCuotaClienteMixto();
+      }
+    }
+
+    function autocompletarCuotaClienteMixto() {
+      const clienteSel = document.getElementById('select-cliente-crespibank').value;
+      const totalRecibido = parseFloat(document.getElementById('input-valor-credito').value) || 0;
+      const creditoActivo = carteraGlobal.find(c => String(c.Cliente || '').toLowerCase().includes(clienteSel.toLowerCase()) && String(c.Estado || '') === 'Activo');
+      const cuotaSugerida = creditoActivo ? (parseFloat(creditoActivo.Interes_Mensual) || 0) : 0;
+
+      const interesAsignado = Math.min(totalRecibido, cuotaSugerida);
+      document.getElementById('input-mixto-interes').value = interesAsignado;
+      document.getElementById('input-mixto-capital').value = Math.max(0, totalRecibido - interesAsignado);
+      document.getElementById('nota-mixto-cuota').innerText = cuotaSugerida > 0
+        ? `Cuota mensual registrada de ${clienteSel}: ${formatoCOP(cuotaSugerida)} COP`
+        : 'Cliente sin cuota activa registrada (ajusta el interés manualmente)';
+    }
+
+    function recalcularCamposModalCrespibank() {
+      if (!txCrespibankEnCurso) return;
+      if (txCrespibankEnCurso.tipo === 'Crespibank_Desembolso' || txCrespibankEnCurso.modoDirecto) {
+        recalcularInteresPorcentaje();
+      } else if (txCrespibankEnCurso.tipo === 'Crespibank_Mixto') {
+        recalcularMixtoDesdeInteres();
+      }
+    }
+
+    function recalcularMixtoDesdeInteres() {
+      const totalRecibido = parseFloat(document.getElementById('input-valor-credito').value) || 0;
+      const intManual = parseFloat(document.getElementById('input-mixto-interes').value) || 0;
+      document.getElementById('input-mixto-capital').value = Math.max(0, totalRecibido - intManual);
     }
 
     function recalcularInteresPorcentaje() {
@@ -796,6 +918,9 @@
 
       const tasaPct = parseFloat(document.getElementById('input-tasa-porcentaje').value) || 0;
       const interesMensual = Math.round(valorCredito * (tasaPct / 100));
+      const montoInteresMixto = parseFloat(document.getElementById('input-mixto-interes').value) || 0;
+      const montoCapitalMixto = parseFloat(document.getElementById('input-mixto-capital').value) || 0;
+
       const estadoModal = { ...txCrespibankEnCurso };
       cerrarModalCrespibank();
 
@@ -819,7 +944,7 @@
       const card = document.getElementById(`card-${id}`);
       if (card) {
         card.style.opacity = '0.4';
-        card.innerHTML = `<p class="text-xs text-purple-300 font-semibold">⏳ Creando crédito por ${formatoCOP(valorCredito)} al ${tasaPct}% mensual para ${cliente}...</p>`;
+        card.innerHTML = `<p class="text-xs text-purple-300 font-semibold">⏳ Aplicando movimiento de ${cliente} en Crespibank...</p>`;
       }
 
       await fetch(API_URL, {
@@ -834,6 +959,8 @@
           cliente: cliente,
           valorCredito: valorCredito,
           interesMensual: interesMensual,
+          montoInteres: montoInteresMixto,
+          montoCapital: montoCapitalMixto,
           aprenderPatron: false
         })
       });
