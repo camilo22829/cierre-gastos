@@ -421,26 +421,38 @@
       return '$' + Math.round(valor).toLocaleString('es-CO');
     }
 
-    async function sincronizarNube() {
-      const badgeNube = document.getElementById('status-nube');
-      badgeNube.innerHTML = '⏳ Sincronizando...';
-      badgeNube.className = 'text-[11px] bg-amber-500/20 border border-amber-500/40 text-amber-300 px-2.5 py-0.5 rounded-full';
+   async function sincronizarNube() {
+  const badgeNube = document.getElementById('status-nube');
+  badgeNube.innerHTML = '⏳ Conectando...';
+  badgeNube.className = 'text-[11px] bg-amber-500/20 border border-amber-500/40 text-amber-300 px-2.5 py-0.5 rounded-full';
 
-      try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
-
-        if (data.status === 'ok') {
-          badgeNube.innerHTML = '🟢 Nube Conectada';
-          badgeNube.className = 'text-[11px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-0.5 rounded-full';
-          procesarDatosNube(data.movimientos || [], data.cartera || [], data.quiminsa || []);
-        }
-      } catch (err) {
-        badgeNube.innerHTML = '🟡 Modo Local';
-        badgeNube.className = 'text-[11px] bg-slate-800 border border-slate-600 text-slate-400 px-2.5 py-0.5 rounded-full';
-      }
+  try {
+    const res = await fetch(API_URL, {
+      method: 'GET',
+      redirect: 'follow',
+      cache: 'no-store'
+    });
+    const texto = await res.text();
+    let data;
+    try {
+      data = JSON.parse(texto);
+    } catch (e) {
+      badgeNube.innerHTML = '⚠️ Respuesta HTML (Permisos/URL)';
+      return;
     }
 
+    if (data.status === 'ok') {
+      badgeNube.innerHTML = '🟢 Nube Conectada';
+      badgeNube.className = 'text-[11px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-0.5 rounded-full';
+      procesarDatosNube(data.movimientos || [], data.cartera || [], data.quiminsa || []);
+    } else {
+      badgeNube.innerHTML = '⚠️ Error: ' + (data.status || 'Desconocido');
+    }
+  } catch (err) {
+    badgeNube.innerHTML = '🔴 Bloqueo Red/Safari: ' + err.message;
+    badgeNube.className = 'text-[11px] bg-rose-500/20 border border-rose-500/40 text-rose-300 px-2.5 py-0.5 rounded-full';
+  }
+}
     function procesarDatosNube(movimientos, cartera, quiminsa) {
       let extraGastoNov = 0;
       let extraHogarNov = 0;
